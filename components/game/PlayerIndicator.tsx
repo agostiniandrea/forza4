@@ -27,8 +27,8 @@ const PlayerCard = styled.div<{ $player: Player; $active: boolean; $winner: bool
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-5);
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-lg);
   border: 1px solid
     ${({ $player, $active, $winner }) =>
@@ -63,8 +63,8 @@ const PlayerCard = styled.div<{ $player: Player; $active: boolean; $winner: bool
 `;
 
 const Disc = styled.div<{ $player: Player; $active: boolean }>`
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: ${({ $player }) =>
     $player === 1
@@ -87,7 +87,7 @@ const PlayerName = styled.span<{ $player: Player }>`
 `;
 
 const Score = styled.span`
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
   font-weight: 700;
   color: var(--color-text);
   line-height: 1;
