@@ -8,7 +8,9 @@
     "logoAlt": "โลโก้ Forza 4",
     "soundOn": "เปิดเสียง",
     "soundOff": "ปิดเสียง",
-    "toggleSound": "เปิด/ปิดเสียง"
+    "toggleSound": "เปิด/ปิดเสียง",
+    "enterFullscreen": "เต็มหน้าจอ",
+    "exitFullscreen": "ออกจากเต็มหน้าจอ"
   },
   "Game": {
     "playerTurn": "ตาของผู้เล่นที่ {player}",

@@ -8,7 +8,9 @@
     "logoAlt": "Forza 4 logo",
     "soundOn": "Sound on",
     "soundOff": "Sound off",
-    "toggleSound": "Toggle sound"
+    "toggleSound": "Toggle sound",
+    "enterFullscreen": "Enter fullscreen",
+    "exitFullscreen": "Exit fullscreen"
   },
   "Game": {
     "playerTurn": "Player {player}'s turn",

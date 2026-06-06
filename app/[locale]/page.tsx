@@ -19,35 +19,29 @@ import { mq } from "@/lib/breakpoints";
 const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
 `;
 
 const Main = styled.main`
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: var(--space-6);
-  padding: var(--space-6) var(--space-4) var(--space-10);
-
-  ${mq.md} {
-    padding: var(--space-8) var(--space-6) var(--space-12);
-    gap: var(--space-8);
-  }
+  justify-content: center;
+  gap: clamp(var(--space-2), 1.5vh, var(--space-6));
+  padding: clamp(var(--space-2), 1.5vh, var(--space-6)) var(--space-4);
 `;
 
 const GameArea = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-6);
+  gap: clamp(var(--space-2), 1.5vh, var(--space-6));
   width: 100%;
   max-width: 640px;
-
-  ${mq.md} {
-    gap: var(--space-8);
-  }
+  min-height: 0;
 `;
 
 const StatusArea = styled.div`
@@ -96,7 +90,22 @@ export default function GamePage() {
   const sound = useSound();
   const [droppingCell, setDroppingCell] = useState<{ row: number; col: number } | null>(null);
   const [hoveredCol, setHoveredCol] = useState(3);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const prevStatusRef = useRef(game.status);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }
 
   // Announce status changes to screen readers
   useEffect(() => {
@@ -134,7 +143,7 @@ export default function GamePage() {
         setTimeout(() => setDroppingCell(null), 500);
       }
       announce(
-        ta("pieceDropped", {
+        t("pieceDropped", {
           player: player === 1 ? t("player1") : t("player2"),
           col: col + 1,
         })
@@ -159,7 +168,12 @@ export default function GamePage() {
   return (
     <PageWrapper>
       <SkipLink />
-      <Header soundEnabled={sound.enabled} onToggleSound={sound.toggle} />
+      <Header
+        soundEnabled={sound.enabled}
+        onToggleSound={sound.toggle}
+        isFullscreen={isFullscreen}
+        onToggleFullscreen={toggleFullscreen}
+      />
 
       <ClientOnly>
         <Confetti active={game.status === "won"} />

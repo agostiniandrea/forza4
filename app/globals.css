@@ -63,10 +63,10 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* Board sizing — fluid, scales between mobile and desktop */
-  --cell-size:         clamp(44px, 10vw, 76px);
-  --cell-gap:          clamp(4px, 1vw, 8px);
-  --board-padding:     clamp(10px, 2.5vw, 20px);
+  /* Board sizing — fluid, scales with both width and height */
+  --cell-size:         clamp(36px, min(9vw, 9vh), 76px);
+  --cell-gap:          clamp(3px, min(0.8vw, 0.8vh), 7px);
+  --board-padding:     clamp(8px, min(2vw, 2vh), 18px);
   --board-radius:      clamp(12px, 2vw, 20px);
 
   /* Radius */
@@ -100,7 +100,8 @@ html {
 
 body {
   margin: 0;
-  min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
   background: var(--color-bg);
   background-image:
     radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 80, 180, 0.18) 0%, transparent 70%),

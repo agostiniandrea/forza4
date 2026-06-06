@@ -82,9 +82,11 @@ const SoundBtn = styled.button<{ $on: boolean }>`
 interface Props {
   soundEnabled: boolean;
   onToggleSound: () => void;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }
 
-export default function Header({ soundEnabled, onToggleSound }: Props) {
+export default function Header({ soundEnabled, onToggleSound, isFullscreen, onToggleFullscreen }: Props) {
   const t = useTranslations("Header");
 
   return (
@@ -108,6 +110,24 @@ export default function Header({ soundEnabled, onToggleSound }: Props) {
         >
           {soundEnabled ? "🔊" : "🔇"}
         </SoundBtn>
+        {onToggleFullscreen && (
+          <SoundBtn
+            $on={false}
+            onClick={onToggleFullscreen}
+            aria-label={isFullscreen ? t("exitFullscreen") : t("enterFullscreen")}
+            title={isFullscreen ? t("exitFullscreen") : t("enterFullscreen")}
+          >
+            {isFullscreen ? (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M1 6h4V2M15 6h-4V2M1 10h4v4M15 10h-4v4" />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M5 1H1v4M11 1h4v4M11 15h4v-4M5 15H1v-4" />
+              </svg>
+            )}
+          </SoundBtn>
+        )}
       </Controls>
     </Nav>
   );
