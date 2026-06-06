@@ -1,0 +1,53 @@
+{
+  "Layout": {
+    "skipToContent": "Skip to main content",
+    "title": "Forza 4",
+    "description": "A beautiful, accessible Connect Four game — play in Italian, English, or Thai. Two players or vs AI."
+  },
+  "Header": {
+    "logoAlt": "Forza 4 logo",
+    "soundOn": "Sound on",
+    "soundOff": "Sound off",
+    "toggleSound": "Toggle sound"
+  },
+  "Game": {
+    "playerTurn": "Player {player}'s turn",
+    "player1": "Player 1",
+    "player2": "Player 2",
+    "you": "You",
+    "ai": "AI",
+    "wins": "{name} wins!",
+    "draw": "It's a draw!",
+    "playAgain": "Play again",
+    "newGame": "New game",
+    "columnLabel": "Column {col}",
+    "dropHere": "Drop piece in column {col}",
+    "columnFull": "Column {col} is full",
+    "pieceDropped": "{player} dropped a piece in column {col}",
+    "youWin": "You win!",
+    "aiWins": "AI wins!",
+    "player1Wins": "Player 1 wins!",
+    "player2Wins": "Player 2 wins!",
+    "score": "Score",
+    "vs": "vs"
+  },
+  "Mode": {
+    "label": "Game mode",
+    "twoPlayers": "2 Players",
+    "vsAi": "vs AI",
+    "difficulty": "Difficulty",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard"
+  },
+  "Accessibility": {
+    "board": "Connect Four board, {rows} rows by {cols} columns",
+    "cellEmpty": "Empty",
+    "cellPlayer1": "Red disc",
+    "cellPlayer2": "Yellow disc",
+    "winCellPlayer1": "Red disc — winning piece",
+    "winCellPlayer2": "Yellow disc — winning piece",
+    "selectedColumn": "Column {col} selected. Press Enter to drop.",
+    "keyboardHint": "Use arrow keys to choose column, Enter to drop"
+  }
+}

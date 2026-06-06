@@ -1,0 +1,53 @@
+{
+  "Layout": {
+    "skipToContent": "Vai al contenuto principale",
+    "title": "Forza 4",
+    "description": "Un bellissimo Forza 4 accessibile — gioca in italiano, inglese o thai. Due giocatori o contro l'IA."
+  },
+  "Header": {
+    "logoAlt": "Logo Forza 4",
+    "soundOn": "Audio attivo",
+    "soundOff": "Audio disattivo",
+    "toggleSound": "Attiva/disattiva audio"
+  },
+  "Game": {
+    "playerTurn": "Turno del giocatore {player}",
+    "player1": "Giocatore 1",
+    "player2": "Giocatore 2",
+    "you": "Tu",
+    "ai": "IA",
+    "wins": "{name} vince!",
+    "draw": "Pareggio!",
+    "playAgain": "Gioca ancora",
+    "newGame": "Nuova partita",
+    "columnLabel": "Colonna {col}",
+    "dropHere": "Lascia il disco nella colonna {col}",
+    "columnFull": "La colonna {col} è piena",
+    "pieceDropped": "{player} ha lasciato un disco nella colonna {col}",
+    "youWin": "Hai vinto!",
+    "aiWins": "Ha vinto l'IA!",
+    "player1Wins": "Ha vinto il Giocatore 1!",
+    "player2Wins": "Ha vinto il Giocatore 2!",
+    "score": "Punteggio",
+    "vs": "vs"
+  },
+  "Mode": {
+    "label": "Modalità di gioco",
+    "twoPlayers": "2 Giocatori",
+    "vsAi": "Contro IA",
+    "difficulty": "Difficoltà",
+    "easy": "Facile",
+    "medium": "Medio",
+    "hard": "Difficile"
+  },
+  "Accessibility": {
+    "board": "Tabellone Forza 4, {rows} righe per {cols} colonne",
+    "cellEmpty": "Vuota",
+    "cellPlayer1": "Disco rosso",
+    "cellPlayer2": "Disco giallo",
+    "winCellPlayer1": "Disco rosso — pezzo vincente",
+    "winCellPlayer2": "Disco giallo — pezzo vincente",
+    "selectedColumn": "Colonna {col} selezionata. Premi Invio per lasciare il disco.",
+    "keyboardHint": "Usa i tasti freccia per scegliere la colonna, Invio per lasciare il disco"
+  }
+}
