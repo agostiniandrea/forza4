@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       template: `%s — ${t("title")}`,
     },
     description: t("description"),
-    metadataBase: new URL("https://forza4.vercel.app"),
+    metadataBase: new URL("https://forza4-game.vercel.app"),
     openGraph: {
       title: t("title"),
       description: t("description"),

@@ -2,7 +2,7 @@
 
 Next.js 16 · React 19 · TypeScript 6 · styled-components 6.4 · next-intl 4.x · Tailwind v4
 
-**Live:** https://forza4-three.vercel.app  
+**Live:** https://forza4-game.vercel.app  
 **GitHub:** https://github.com/agostiniandrea/forza4  
 **Vercel project:** andrea-agostinis-projects/forza4
 

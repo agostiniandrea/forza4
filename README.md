@@ -2,7 +2,7 @@
 
 A beautiful, accessible Connect Four game built with Next.js, React and styled-components.
 
-**Live demo → [forza4-three.vercel.app](https://forza4-three.vercel.app)**
+**Live demo → [forza4-game.vercel.app](https://forza4-game.vercel.app)**
 
 ---
 
