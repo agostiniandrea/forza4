@@ -143,11 +143,13 @@ export default function PlayerIndicator({
             <Score aria-label={`${name(p)} ${t("score")}: ${scores[p]}`}>
               {scores[p]}
             </Score>
-            {isAiThinking && p === 2 && (
-              <span style={{ fontSize: "var(--font-size-xs)", color: "var(--color-text-muted)" }}>
-                ...
-              </span>
-            )}
+            <span style={{
+              fontSize: "var(--font-size-xs)",
+              color: "var(--color-text-muted)",
+              visibility: isAiThinking && p === 2 ? "visible" : "hidden",
+            }}>
+              ...
+            </span>
           </PlayerCard>
         </>
       ))}
