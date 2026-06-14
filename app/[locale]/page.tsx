@@ -17,9 +17,10 @@ import ClientOnly from "@/lib/ClientOnly";
 import { mq } from "@/lib/breakpoints";
 
 const PageWrapper = styled.div`
+  position: fixed;
+  inset: 0;
   display: flex;
   flex-direction: column;
-  height: 100dvh;
   overflow: hidden;
 `;
 
@@ -91,9 +92,11 @@ export default function GamePage() {
   const [droppingCell, setDroppingCell] = useState<{ row: number; col: number } | null>(null);
   const [hoveredCol, setHoveredCol] = useState(3);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [supportsFullscreen, setSupportsFullscreen] = useState(false);
   const prevStatusRef = useRef(game.status);
 
   useEffect(() => {
+    setSupportsFullscreen("requestFullscreen" in document.documentElement);
     const onChange = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
@@ -172,7 +175,7 @@ export default function GamePage() {
         soundEnabled={sound.enabled}
         onToggleSound={sound.toggle}
         isFullscreen={isFullscreen}
-        onToggleFullscreen={toggleFullscreen}
+        onToggleFullscreen={supportsFullscreen ? toggleFullscreen : undefined}
       />
 
       <ClientOnly>
