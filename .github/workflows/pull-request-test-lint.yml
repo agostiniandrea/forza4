@@ -1,8 +1,10 @@
 name: Test & Lint
 
 on:
-  pull_request_target:
-    types: [opened, synchronize]
+  pull_request:
+    types:
+      - opened
+      - synchronize
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,40 +19,24 @@ jobs:
   test-and-lint:
     name: Typecheck & Lint
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.actor, 'dependabot') }}
 
     steps:
-      - name: Checkout PR branch
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Enable Corepack
+      - name: Corepack
         run: corepack enable
 
-      - name: Set Yarn version
-        run: corepack prepare yarn@4.9.1 --activate
-
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
-
-      - name: Setup yarn cache
-        uses: actions/cache@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          node-version: '24'
+          cache: 'yarn'
 
-      - name: Install dependencies
-        run: yarn install
+      - name: Install
+        run: yarn install --immutable
 
       - name: Type-check TypeScript
         run: yarn typecheck
