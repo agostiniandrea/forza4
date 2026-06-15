@@ -23,7 +23,7 @@ const Container = styled.div`
   }
 `;
 
-const PlayerCard = styled.div<{ $player: Player; $active: boolean; $winner: boolean; $rotate: boolean }>`
+const PlayerCard = styled.div<{ $player: Player; $active: boolean; $winner: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -51,16 +51,8 @@ const PlayerCard = styled.div<{ $player: Player; $active: boolean; $winner: bool
         ? "rgba(255, 59, 59, 0.08)"
         : "rgba(255, 215, 0, 0.08)"
       : "transparent"};
-  transition: border-color var(--transition-normal), background var(--transition-normal), box-shadow var(--transition-normal), transform var(--transition-slow);
+  transition: border-color var(--transition-normal), background var(--transition-normal), box-shadow var(--transition-normal);
   min-width: 100px;
-
-  ${({ $rotate }) =>
-    $rotate &&
-    css`
-      @media (max-width: 767px) {
-        transform: rotate(180deg);
-      }
-    `}
 
   ${({ $active, $winner, $player }) =>
     $active &&
@@ -144,7 +136,6 @@ export default function PlayerIndicator({
             $player={p}
             $active={!winner && currentPlayer === p}
             $winner={winner === p}
-            $rotate={mode === "2p" && p === 1}
             aria-current={!winner && currentPlayer === p ? "true" : undefined}
           >
             <Disc $player={p} $active={!winner && currentPlayer === p} />
