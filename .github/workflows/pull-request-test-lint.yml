@@ -45,7 +45,7 @@ jobs:
         run: yarn test
 
       - name: Run lint
-        run: yarn lint
+        run: ./node_modules/.bin/next lint --dir .
 
       - name: Auto-merge PR
         if: success()
