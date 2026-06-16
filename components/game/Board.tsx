@@ -26,17 +26,30 @@ const ColumnIndicator = styled.div`
   height: 32px;
 `;
 
-const DropArrow = styled.div<{ $visible: boolean; $player: Player }>`
+const DropIndicator = styled.div<{ $visible: boolean; $player: Player }>`
   width: var(--cell-size);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
   opacity: ${({ $visible }) => ($visible ? 1 : 0)};
   transition: opacity var(--transition-fast);
-  color: ${({ $player }) => ($player === 1 ? "var(--color-p1)" : "var(--color-p2)")};
-  animation: ${({ $visible }) =>
-    $visible ? css`${hoverPulse} 0.8s ease-in-out infinite` : "none"};
+
+  &::after {
+    content: "";
+    width: calc(var(--cell-size) * 0.55);
+    height: calc(var(--cell-size) * 0.55);
+    border-radius: 50%;
+    background: ${({ $player }) =>
+      $player === 1
+        ? "radial-gradient(circle at 35% 35%, var(--color-p1-light), var(--color-p1))"
+        : "radial-gradient(circle at 35% 35%, var(--color-p2-light), var(--color-p2))"};
+    box-shadow: ${({ $player }) =>
+      $player === 1
+        ? "0 0 12px var(--color-p1-glow-soft)"
+        : "0 0 12px var(--color-p2-glow-soft)"};
+    animation: ${({ $visible }) =>
+      $visible ? css`${hoverPulse} 0.9s ease-in-out infinite` : "none"};
+  }
 `;
 
 const BoardFrame = styled.div`
@@ -149,13 +162,11 @@ export default function Board({
     <BoardWrapper>
       <ColumnIndicator aria-hidden="true">
         {Array.from({ length: COLS }, (_, col) => (
-          <DropArrow
+          <DropIndicator
             key={col}
             $visible={!disabled && hoveredCol === col}
             $player={currentPlayer}
-          >
-            ▼
-          </DropArrow>
+          />
         ))}
       </ColumnIndicator>
 

@@ -3,7 +3,6 @@
 import { Fragment } from "react";
 import styled, { css, keyframes } from "styled-components";
 import type { Player } from "@/lib/game-engine";
-import type { GameMode } from "@/hooks/useGame";
 import { mq } from "@/lib/breakpoints";
 
 const pulse = keyframes`
@@ -25,9 +24,9 @@ const Container = styled.div`
 
 const PlayerCard = styled.div<{ $player: Player; $active: boolean; $winner: boolean }>`
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-3);
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-lg);
   border: 1px solid
@@ -44,7 +43,6 @@ const PlayerCard = styled.div<{ $player: Player; $active: boolean; $winner: bool
       ? $player === 1 ? "rgba(255, 59, 59, 0.08)" : "rgba(255, 215, 0, 0.08)"
       : "transparent"};
   transition: border-color var(--transition-normal), background var(--transition-normal), box-shadow var(--transition-normal);
-  min-width: 80px;
 
   ${({ $active, $winner, $player }) =>
     $active && !$winner && css`
@@ -53,8 +51,9 @@ const PlayerCard = styled.div<{ $player: Player; $active: boolean; $winner: bool
 `;
 
 const Disc = styled.div<{ $player: Player; $active: boolean }>`
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: ${({ $player }) =>
     $player === 1
@@ -69,13 +68,8 @@ const Score = styled.span`
   font-weight: 700;
   color: var(--color-text);
   line-height: 1;
-`;
-
-const AiLabel = styled.span`
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  min-width: 1.5ch;
+  text-align: center;
 `;
 
 const Separator = styled.span`
@@ -85,21 +79,13 @@ const Separator = styled.span`
   align-self: center;
 `;
 
-const ThinkingDots = styled.span`
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  visibility: inherit;
-`;
-
 interface Props {
   currentPlayer: Player;
   winner: Player | null;
   scores: { 1: number; 2: number };
-  mode: GameMode;
-  isAiThinking: boolean;
 }
 
-export default function PlayerIndicator({ currentPlayer, winner, scores, mode, isAiThinking }: Props) {
+export default function PlayerIndicator({ currentPlayer, winner, scores }: Props) {
   return (
     <Container>
       {([1, 2] as Player[]).map((p, i) => (
@@ -110,28 +96,10 @@ export default function PlayerIndicator({ currentPlayer, winner, scores, mode, i
             $active={!winner && currentPlayer === p}
             $winner={winner === p}
             aria-current={!winner && currentPlayer === p ? "true" : undefined}
-            aria-label={
-              mode === "ai"
-                ? p === 1 ? "You" : "AI"
-                : `Player ${p}`
-            }
+            aria-label={`Player ${p}, score ${scores[p]}`}
           >
             <Disc $player={p} $active={!winner && currentPlayer === p} />
-            {mode === "ai" && p === 2 && <AiLabel>AI</AiLabel>}
-            <Score
-              aria-label={`Score: ${scores[p]}`}
-            >
-              {scores[p]}
-            </Score>
-            {mode === "ai" && p === 2 && (
-              <ThinkingDots
-                style={{ visibility: isAiThinking ? "visible" : "hidden" }}
-                aria-live="polite"
-                aria-label={isAiThinking ? "AI is thinking" : undefined}
-              >
-                …
-              </ThinkingDots>
-            )}
+            <Score aria-hidden="true">{scores[p]}</Score>
           </PlayerCard>
         </Fragment>
       ))}

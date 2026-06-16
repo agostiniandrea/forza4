@@ -186,8 +186,6 @@ export default function GamePage() {
             currentPlayer={game.currentPlayer}
             winner={game.winner}
             scores={scores}
-            mode={mode}
-            isAiThinking={isAiThinking}
           />
 
           <BoardSection>

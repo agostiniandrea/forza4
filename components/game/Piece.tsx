@@ -44,12 +44,13 @@ const PieceEl = styled.div<PieceProps>`
           color: var(--color-p2);
         `}
 
-  ${({ $dropping, $row = 0 }) =>
-    $dropping &&
-    css`
-      --drop-start: calc(-1 * (${$row} + 1) * (var(--cell-size) + var(--cell-gap)));
-      animation: ${dropAnim} calc(0.25s + ${$row} * 0.035s) cubic-bezier(0.2, 1.05, 0.4, 1) forwards;
-    `}
+  ${({ $dropping, $row = 0 }) => {
+    const rows = Math.max(0.5, $row);
+    return $dropping && css`
+      --drop-start: calc(-1 * ${rows} * (var(--cell-size) + var(--cell-gap)));
+      animation: ${dropAnim} calc(0.4s + ${$row} * 0.07s) cubic-bezier(0.15, 1.0, 0.4, 1) forwards;
+    `;
+  }}
 
   ${({ $winning }) =>
     $winning &&
