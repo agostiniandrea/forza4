@@ -174,7 +174,13 @@ export default function GamePage() {
   }
 
   const isGameOver = game.status === "won" || game.status === "draw";
+  const isDraw = game.status === "draw";
   const gameInProgress = game.status === "playing" && game.lastMove !== null;
+
+  const resultLabel = !isGameOver ? undefined :
+    isDraw ? "Tie!" :
+    mode === "ai" ? (game.winner === 1 ? "You win!" : "AI wins!") :
+    game.winner === 1 ? "Red wins!" : "Yellow wins!";
 
   function getTurnText(): string {
     if (mode === "ai") return isAiThinking ? "AI thinking…" : "Your turn";
@@ -200,7 +206,9 @@ export default function GamePage() {
           <PlayerIndicator
             currentPlayer={game.currentPlayer}
             winner={game.winner}
+            isDraw={isDraw}
             scores={scores}
+            resultLabel={resultLabel}
           />
 
           <BoardSection>
@@ -219,12 +227,7 @@ export default function GamePage() {
 
           <StatusArea>
             {isGameOver ? (
-              <GameStatus
-                winner={game.winner}
-                isDraw={game.status === "draw"}
-                mode={mode}
-                onPlayAgain={handleReset}
-              />
+              <GameStatus onPlayAgain={handleReset} />
             ) : (
               <TurnLabel $player={game.currentPlayer} aria-live="polite">
                 {getTurnText()}
@@ -236,6 +239,7 @@ export default function GamePage() {
             mode={mode}
             difficulty={aiDifficulty}
             gameInProgress={gameInProgress}
+            isGameOver={isGameOver}
             onSetMode={setMode}
             onSetDifficulty={setDifficulty}
             onReset={handleReset}

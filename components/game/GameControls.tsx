@@ -50,12 +50,16 @@ interface Props {
   mode: GameMode;
   difficulty: AiDifficulty;
   gameInProgress: boolean;
+  isGameOver: boolean;
   onSetMode: (mode: GameMode) => void;
   onSetDifficulty: (d: AiDifficulty) => void;
   onReset: () => void;
 }
 
-export default function GameControls({ mode, difficulty, gameInProgress, onSetMode, onSetDifficulty, onReset }: Props) {
+export default function GameControls({ mode, difficulty, gameInProgress, isGameOver, onSetMode, onSetDifficulty, onReset }: Props) {
+  // On game over: hide everything — only "Play again" (in StatusArea) is shown
+  if (isGameOver) return null;
+
   return (
     <Container>
       {!gameInProgress && (

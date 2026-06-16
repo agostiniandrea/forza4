@@ -10,6 +10,11 @@ const pulse = keyframes`
   50%       { opacity: 0.7; transform: scale(0.92); }
 `;
 
+const shimmer = keyframes`
+  from { background-position: -200% center; }
+  to   { background-position: 200% center; }
+`;
+
 const Container = styled.div`
   display: flex;
   align-items: center;
@@ -77,28 +82,58 @@ const Separator = styled.span`
   color: var(--color-text-muted);
   font-weight: 300;
   align-self: center;
+  text-align: center;
+  min-width: 48px;
+`;
+
+const ResultText = styled.span<{ $player?: Player }>`
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  align-self: center;
+  text-align: center;
+  min-width: 64px;
+  background: ${({ $player }) =>
+    $player === 1
+      ? "linear-gradient(135deg, var(--color-p1-light), var(--color-p1))"
+      : $player === 2
+      ? "linear-gradient(135deg, var(--color-p2-light), var(--color-p2))"
+      : "linear-gradient(135deg, #aaa, #ccc)"};
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: ${shimmer} 2s linear infinite;
 `;
 
 interface Props {
   currentPlayer: Player;
   winner: Player | null;
+  isDraw: boolean;
   scores: { 1: number; 2: number };
+  resultLabel?: string;
 }
 
-export default function PlayerIndicator({ currentPlayer, winner, scores }: Props) {
+export default function PlayerIndicator({ currentPlayer, winner, isDraw, scores, resultLabel }: Props) {
+  const isGameOver = !!winner || isDraw;
+
   return (
     <Container>
       {([1, 2] as Player[]).map((p, i) => (
         <Fragment key={p}>
-          {i === 1 && <Separator aria-hidden="true">vs</Separator>}
+          {i === 1 && (
+            isGameOver && resultLabel
+              ? <ResultText $player={winner ?? undefined} aria-live="polite">{resultLabel}</ResultText>
+              : <Separator aria-hidden="true">vs</Separator>
+          )}
           <PlayerCard
             $player={p}
-            $active={!winner && currentPlayer === p}
+            $active={!isGameOver && currentPlayer === p}
             $winner={winner === p}
-            aria-current={!winner && currentPlayer === p ? "true" : undefined}
+            aria-current={!isGameOver && currentPlayer === p ? "true" : undefined}
             aria-label={`Player ${p}, score ${scores[p]}`}
           >
-            <Disc $player={p} $active={!winner && currentPlayer === p} />
+            <Disc $player={p} $active={!isGameOver && currentPlayer === p} />
             <Score aria-hidden="true">{scores[p]}</Score>
           </PlayerCard>
         </Fragment>
