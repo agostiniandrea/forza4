@@ -13,18 +13,13 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
-// Explicit viewport export prevents Next.js 16 from rendering a streaming
-// metadata boundary that causes a dev-mode hydration mismatch.
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
 };
 
 export const metadata: Metadata = {
-  title: {
-    default: "Forza 4",
-    template: "%s — Forza 4",
-  },
+  title: "Forza 4",
   description: "A beautiful, accessible Connect Four game. Play against a friend or vs AI.",
   openGraph: {
     title: "Forza 4",

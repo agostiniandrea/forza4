@@ -71,7 +71,7 @@ export default function GameControls({ mode, difficulty, gameInProgress, isGameO
     );
   }
 
-  // No moves yet (fresh start or after reset): show mode picker + prominent "Start"
+  // No moves yet: show mode/difficulty pickers only — game starts on first board click
   return (
     <Container>
       <Group role="group" aria-label="Game mode">
@@ -97,10 +97,6 @@ export default function GameControls({ mode, difficulty, gameInProgress, isGameO
           ))}
         </Group>
       )}
-
-      <Button $variant="primary" onClick={onReset}>
-        Start
-      </Button>
     </Container>
   );
 }
