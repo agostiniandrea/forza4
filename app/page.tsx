@@ -45,11 +45,15 @@ const GameArea = styled.div`
   min-height: 0;
 `;
 
+// Fixed height so the layout never shifts when win card replaces TurnLabel.
+// Win card: padding 12*2 + content ~28px + border 2px ≈ 54px.
 const StatusArea = styled.div`
-  min-height: 40px;
+  height: 54px;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: visible;
 `;
 
 const TurnLabel = styled.p<{ $player: 1 | 2 }>`
@@ -68,6 +72,8 @@ const BoardSection = styled.div`
   justify-content: center;
 `;
 
+const subscribeToNothing = () => () => {};
+
 export default function GamePage() {
   const announce = useAnnouncer();
 
@@ -85,16 +91,18 @@ export default function GamePage() {
     selectCol,
   } = useGame();
 
-  const sound = useSound();
+  const { enabled: soundEnabled, toggle: toggleSound, playDrop, playWin, playDraw, playReset } = useSound();
   const [droppingCell, setDroppingCell] = useState<{ row: number; col: number } | null>(null);
   const [hoveredCol, setHoveredCol] = useState(3);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const supportsFullscreen = useSyncExternalStore(
-    () => () => {},
+    subscribeToNothing,
     () => "requestFullscreen" in document.documentElement,
     () => false,
   );
   const prevStatusRef = useRef(game.status);
+  // Tracks last processed lastMove to avoid re-firing on unrelated re-renders.
+  const prevLastMoveRef = useRef(game.lastMove);
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(!!document.fullscreenElement);
@@ -111,14 +119,16 @@ export default function GamePage() {
   }
 
   // Handles animation + sound for every drop (human and AI) by watching lastMove.
-  // Reading board[row][col] after the drop always gives the correct player.
-  // setDroppingCell is deferred via setTimeout to satisfy react-hooks/set-state-in-effect.
+  // The ref guard prevents spurious re-fires when sound callbacks change reference.
   useEffect(() => {
+    if (game.lastMove === prevLastMoveRef.current) return;
+    prevLastMoveRef.current = game.lastMove;
     if (!game.lastMove) return;
+
     const { row, col } = game.lastMove;
     const player = game.board[row][col] as Player;
 
-    sound.playDrop(player);
+    playDrop(player);
     const playerName =
       mode === "ai"
         ? player === 1 ? "You" : "AI"
@@ -128,7 +138,7 @@ export default function GamePage() {
     const tStart = setTimeout(() => setDroppingCell({ row, col }), 0);
     const tEnd = setTimeout(() => setDroppingCell(null), 600);
     return () => { clearTimeout(tStart); clearTimeout(tEnd); };
-  }, [game.lastMove, game.board, sound, announce, mode]);
+  }, [game.lastMove, game.board, playDrop, announce, mode]);
 
   useEffect(() => {
     if (game.status === prevStatusRef.current) return;
@@ -139,12 +149,12 @@ export default function GamePage() {
           ? game.winner === 1 ? "You" : "AI"
           : game.winner === 1 ? "Red" : "Yellow";
       announce(`${name} wins!`);
-      sound.playWin();
+      playWin();
     } else if (game.status === "draw") {
       announce("It's a draw!");
-      sound.playDraw();
+      playDraw();
     }
-  }, [game.status, game.winner, mode, announce, sound]);
+  }, [game.status, game.winner, mode, announce, playWin, playDraw]);
 
   function handleColumnClick(col: number) {
     if (game.status !== "playing" || isAiThinking) return;
@@ -159,7 +169,7 @@ export default function GamePage() {
   }
 
   function handleReset() {
-    sound.playReset();
+    playReset();
     reset();
   }
 
@@ -175,8 +185,8 @@ export default function GamePage() {
     <PageWrapper>
       <SkipLink />
       <Header
-        soundEnabled={sound.enabled}
-        onToggleSound={sound.toggle}
+        soundEnabled={soundEnabled}
+        onToggleSound={toggleSound}
         isFullscreen={isFullscreen}
         onToggleFullscreen={supportsFullscreen ? toggleFullscreen : undefined}
       />

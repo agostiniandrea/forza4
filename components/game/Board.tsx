@@ -155,7 +155,7 @@ export default function Board({
         {Array.from({ length: COLS }, (_, col) => (
           <DropIndicator
             key={col}
-            $visible={winCells === null && hoveredCol === col}
+            $visible={!disabled && hoveredCol === col}
             $player={currentPlayer}
           >
             ▼
