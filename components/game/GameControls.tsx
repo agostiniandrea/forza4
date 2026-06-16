@@ -57,41 +57,49 @@ interface Props {
 }
 
 export default function GameControls({ mode, difficulty, gameInProgress, isGameOver, onSetMode, onSetDifficulty, onReset }: Props) {
-  // On game over: hide everything — only "Play again" (in StatusArea) is shown
+  // Game over: hide controls entirely — only "Play again" (StatusArea) is visible
   if (isGameOver) return null;
 
+  // Game in progress: just a small "New game" escape hatch
+  if (gameInProgress) {
+    return (
+      <Container>
+        <Button $variant="ghost" $small onClick={onReset}>
+          ↺ New game
+        </Button>
+      </Container>
+    );
+  }
+
+  // No moves yet (fresh start or after reset): show mode picker + prominent "Start"
   return (
     <Container>
-      {!gameInProgress && (
-        <>
-          <Group role="group" aria-label="Game mode">
-            <SegmentBtn $active={mode === "2p"} onClick={() => onSetMode("2p")} aria-pressed={mode === "2p"}>
-              2 Players
-            </SegmentBtn>
-            <SegmentBtn $active={mode === "ai"} onClick={() => onSetMode("ai")} aria-pressed={mode === "ai"}>
-              vs AI
-            </SegmentBtn>
-          </Group>
+      <Group role="group" aria-label="Game mode">
+        <SegmentBtn $active={mode === "2p"} onClick={() => onSetMode("2p")} aria-pressed={mode === "2p"}>
+          2 Players
+        </SegmentBtn>
+        <SegmentBtn $active={mode === "ai"} onClick={() => onSetMode("ai")} aria-pressed={mode === "ai"}>
+          vs AI
+        </SegmentBtn>
+      </Group>
 
-          {mode === "ai" && (
-            <Group role="group" aria-label="Difficulty">
-              {(["easy", "medium", "hard"] as AiDifficulty[]).map((d) => (
-                <SegmentBtn
-                  key={d}
-                  $active={difficulty === d}
-                  onClick={() => onSetDifficulty(d)}
-                  aria-pressed={difficulty === d}
-                >
-                  {d.charAt(0).toUpperCase() + d.slice(1)}
-                </SegmentBtn>
-              ))}
-            </Group>
-          )}
-        </>
+      {mode === "ai" && (
+        <Group role="group" aria-label="Difficulty">
+          {(["easy", "medium", "hard"] as AiDifficulty[]).map((d) => (
+            <SegmentBtn
+              key={d}
+              $active={difficulty === d}
+              onClick={() => onSetDifficulty(d)}
+              aria-pressed={difficulty === d}
+            >
+              {d.charAt(0).toUpperCase() + d.slice(1)}
+            </SegmentBtn>
+          ))}
+        </Group>
       )}
 
-      <Button $variant="ghost" $small onClick={onReset}>
-        ↺ New game
+      <Button $variant="primary" onClick={onReset}>
+        Start
       </Button>
     </Container>
   );
