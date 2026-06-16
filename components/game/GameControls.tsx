@@ -86,7 +86,7 @@ export default function GameControls({ mode, difficulty, gameInProgress, onSetMo
         </>
       )}
 
-      <Button variant="ghost" $small onClick={onReset}>
+      <Button $variant="ghost" $small onClick={onReset}>
         ↺ New game
       </Button>
     </Container>

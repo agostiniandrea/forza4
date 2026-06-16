@@ -68,15 +68,13 @@ export function useGame() {
   const aiTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const drop = useCallback(
-    (col: number, onDrop?: (player: 1 | 2) => void) => {
+    (col: number) => {
       if (state.game.status !== "playing") return;
       if (state.isAiThinking) return;
 
       const currentPlayer = state.game.currentPlayer;
       dispatch({ type: "DROP", col });
-      onDrop?.(currentPlayer);
 
-      // Schedule AI move
       if (
         state.mode === "ai" &&
         state.game.status === "playing" &&
@@ -95,7 +93,6 @@ export function useGame() {
           }
           const aiCol = getBestMove(testGame.board, difficulty);
           dispatch({ type: "AI_DROP", col: aiCol });
-          onDrop?.(2);
         }, 600);
       }
     },

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import styled from "styled-components";
+import type { Player } from "@/lib/game-engine";
 import { useGame } from "@/hooks/useGame";
 import { useSound } from "@/hooks/useSound";
 import { useAnnouncer } from "@/hooks/useAnnouncer";
@@ -109,6 +110,26 @@ export default function GamePage() {
     }
   }
 
+  // Handles animation + sound for every drop (human and AI) by watching lastMove.
+  // Reading board[row][col] after the drop always gives the correct player.
+  // setDroppingCell is deferred via setTimeout to satisfy react-hooks/set-state-in-effect.
+  useEffect(() => {
+    if (!game.lastMove) return;
+    const { row, col } = game.lastMove;
+    const player = game.board[row][col] as Player;
+
+    sound.playDrop(player);
+    const playerName =
+      mode === "ai"
+        ? player === 1 ? "You" : "AI"
+        : player === 1 ? "Red" : "Yellow";
+    announce(`${playerName} dropped in column ${col + 1}`);
+
+    const tStart = setTimeout(() => setDroppingCell({ row, col }), 0);
+    const tEnd = setTimeout(() => setDroppingCell(null), 600);
+    return () => { clearTimeout(tStart); clearTimeout(tEnd); };
+  }, [game.lastMove, game.board, sound, announce, mode]);
+
   useEffect(() => {
     if (game.status === prevStatusRef.current) return;
     prevStatusRef.current = game.status;
@@ -127,23 +148,7 @@ export default function GamePage() {
 
   function handleColumnClick(col: number) {
     if (game.status !== "playing" || isAiThinking) return;
-
-    const dropRow = game.board
-      .map((row) => row[col])
-      .reduceRight((acc, cell, i) => (acc === -1 && cell === null ? i : acc), -1);
-
-    drop(col, (player) => {
-      sound.playDrop(player);
-      if (dropRow !== -1) {
-        setDroppingCell({ row: dropRow, col });
-        setTimeout(() => setDroppingCell(null), 500);
-      }
-      const playerName =
-        mode === "ai"
-          ? player === 1 ? "You" : "AI"
-          : player === 1 ? "Red" : "Yellow";
-      announce(`${playerName} dropped in column ${col + 1}`);
-    });
+    drop(col);
   }
 
   function handleColumnHover(col: number) {
