@@ -15,6 +15,17 @@ const shimmer = keyframes`
   to   { background-position: 200% center; }
 `;
 
+const Backdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+`;
+
 const Overlay = styled.div`
   display: flex;
   flex-direction: column;
@@ -22,7 +33,7 @@ const Overlay = styled.div`
   gap: var(--space-4);
   padding: var(--space-6) var(--space-8);
   border-radius: var(--radius-xl);
-  background: rgba(13, 16, 32, 0.92);
+  background: rgba(13, 16, 32, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
   box-shadow: 0 8px 64px rgba(0, 0, 0, 0.7);
@@ -71,10 +82,12 @@ export default function GameStatus({ winner, isDraw, mode, onPlayAgain }: Props)
   const emoji = isDraw ? "🤝" : winner === 1 ? "🎉" : mode === "ai" ? "🤖" : "🏆";
 
   return (
-    <Overlay role="alert" aria-live="assertive">
-      <Emoji aria-hidden="true">{emoji}</Emoji>
-      <WinText $player={winner ?? undefined}>{getMessage()}</WinText>
-      <Button onClick={onPlayAgain}>Play again</Button>
-    </Overlay>
+    <Backdrop>
+      <Overlay role="alert" aria-live="assertive">
+        <Emoji aria-hidden="true">{emoji}</Emoji>
+        <WinText $player={winner ?? undefined}>{getMessage()}</WinText>
+        <Button onClick={onPlayAgain}>Play again</Button>
+      </Overlay>
+    </Backdrop>
   );
 }

@@ -31,25 +31,16 @@ const DropIndicator = styled.div<{ $visible: boolean; $player: Player }>`
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 16px;
   opacity: ${({ $visible }) => ($visible ? 1 : 0)};
   transition: opacity var(--transition-fast);
-
-  &::after {
-    content: "";
-    width: calc(var(--cell-size) * 0.55);
-    height: calc(var(--cell-size) * 0.55);
-    border-radius: 50%;
-    background: ${({ $player }) =>
-      $player === 1
-        ? "radial-gradient(circle at 35% 35%, var(--color-p1-light), var(--color-p1))"
-        : "radial-gradient(circle at 35% 35%, var(--color-p2-light), var(--color-p2))"};
-    box-shadow: ${({ $player }) =>
-      $player === 1
-        ? "0 0 12px var(--color-p1-glow-soft)"
-        : "0 0 12px var(--color-p2-glow-soft)"};
-    animation: ${({ $visible }) =>
-      $visible ? css`${hoverPulse} 0.9s ease-in-out infinite` : "none"};
-  }
+  color: ${({ $player }) => ($player === 1 ? "var(--color-p1)" : "var(--color-p2)")};
+  filter: ${({ $player }) =>
+    $player === 1
+      ? "drop-shadow(0 0 6px var(--color-p1))"
+      : "drop-shadow(0 0 6px var(--color-p2))"};
+  animation: ${({ $visible }) =>
+    $visible ? css`${hoverPulse} 0.8s ease-in-out infinite` : "none"};
 `;
 
 const BoardFrame = styled.div`
@@ -166,7 +157,9 @@ export default function Board({
             key={col}
             $visible={!disabled && hoveredCol === col}
             $player={currentPlayer}
-          />
+          >
+            ▼
+          </DropIndicator>
         ))}
       </ColumnIndicator>
 
