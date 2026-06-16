@@ -1,5 +1,6 @@
 "use client";
 
+import { Fragment } from "react";
 import styled, { css, keyframes } from "styled-components";
 import type { Player } from "@/lib/game-engine";
 import type { GameMode } from "@/hooks/useGame";
@@ -102,10 +103,9 @@ export default function PlayerIndicator({ currentPlayer, winner, scores, mode, i
   return (
     <Container>
       {([1, 2] as Player[]).map((p, i) => (
-        <>
-          {i === 1 && <Separator key="sep" aria-hidden="true">vs</Separator>}
+        <Fragment key={p}>
+          {i === 1 && <Separator aria-hidden="true">vs</Separator>}
           <PlayerCard
-            key={p}
             $player={p}
             $active={!winner && currentPlayer === p}
             $winner={winner === p}
@@ -133,7 +133,7 @@ export default function PlayerIndicator({ currentPlayer, winner, scores, mode, i
               </ThinkingDots>
             )}
           </PlayerCard>
-        </>
+        </Fragment>
       ))}
     </Container>
   );
