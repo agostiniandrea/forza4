@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import styled from "styled-components";
 import { useTranslations } from "next-intl";
 import { useGame } from "@/hooks/useGame";
@@ -92,11 +92,14 @@ export default function GamePage() {
   const [droppingCell, setDroppingCell] = useState<{ row: number; col: number } | null>(null);
   const [hoveredCol, setHoveredCol] = useState(3);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [supportsFullscreen, setSupportsFullscreen] = useState(false);
+  const supportsFullscreen = useSyncExternalStore(
+    () => () => {},
+    () => "requestFullscreen" in document.documentElement,
+    () => false,
+  );
   const prevStatusRef = useRef(game.status);
 
   useEffect(() => {
-    setSupportsFullscreen("requestFullscreen" in document.documentElement);
     const onChange = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
