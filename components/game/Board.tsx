@@ -206,6 +206,7 @@ export default function Board({
                     <Piece
                       player={cell}
                       dropping={isDropping}
+                      droppingRow={isDropping ? row : undefined}
                       winning={isWin}
                     />
                   )}

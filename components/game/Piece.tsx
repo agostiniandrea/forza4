@@ -3,10 +3,13 @@
 import styled, { css, keyframes } from "styled-components";
 import type { Player } from "@/lib/game-engine";
 
+// Drop distance is set as a CSS custom property per-piece based on target row,
+// so the token always falls from just above the top of the grid.
 const dropAnim = keyframes`
-  0%   { transform: translateY(-300%) scale(0.8); opacity: 0.6; }
-  60%  { transform: translateY(8%) scale(1.04); opacity: 1; }
-  80%  { transform: translateY(-3%) scale(0.98); }
+  0%   { transform: translateY(var(--drop-start)) scale(0.9); opacity: 0.7; }
+  70%  { transform: translateY(0) scale(1.04); opacity: 1; }
+  83%  { transform: translateY(calc(var(--cell-size) * -0.04)) scale(0.98); }
+  92%  { transform: translateY(calc(var(--cell-size) * 0.02)) scale(1.01); }
   100% { transform: translateY(0) scale(1); opacity: 1; }
 `;
 
@@ -18,6 +21,7 @@ const winAnim = keyframes`
 interface PieceProps {
   $player: Player;
   $dropping?: boolean;
+  $row?: number;
   $winning?: boolean;
 }
 
@@ -40,10 +44,11 @@ const PieceEl = styled.div<PieceProps>`
           color: var(--color-p2);
         `}
 
-  ${({ $dropping }) =>
+  ${({ $dropping, $row = 0 }) =>
     $dropping &&
     css`
-      animation: ${dropAnim} 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      --drop-start: calc(-1 * (${$row} + 1) * (var(--cell-size) + var(--cell-gap)));
+      animation: ${dropAnim} calc(0.25s + ${$row} * 0.035s) cubic-bezier(0.2, 1.05, 0.4, 1) forwards;
     `}
 
   ${({ $winning }) =>
@@ -67,9 +72,17 @@ const PieceEl = styled.div<PieceProps>`
 interface Props {
   player: Player;
   dropping?: boolean;
+  droppingRow?: number;
   winning?: boolean;
 }
 
-export default function Piece({ player, dropping, winning }: Props) {
-  return <PieceEl $player={player} $dropping={dropping} $winning={winning} />;
+export default function Piece({ player, dropping, droppingRow, winning }: Props) {
+  return (
+    <PieceEl
+      $player={player}
+      $dropping={dropping}
+      $row={droppingRow}
+      $winning={winning}
+    />
+  );
 }
