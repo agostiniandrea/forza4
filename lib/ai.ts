@@ -30,7 +30,9 @@ function scoreWindow(window: (Player | null)[], player: Player): number {
   if (count === 4) return 100;
   if (count === 3 && empty === 1) return 5;
   if (count === 2 && empty === 2) return 2;
-  if (oppCount === 3 && empty === 1) return -4;
+  // Block opponent threats with high priority — must be close to win value
+  if (oppCount === 3 && empty === 1) return -80;
+  if (oppCount === 2 && empty === 2) return -2;
   return 0;
 }
 
@@ -97,7 +99,6 @@ function minimax(
   if (depth === 0 || isTerminal(board)) {
     if (depth === 0) return evaluateBoard(board, AI_PLAYER) - evaluateBoard(board, HUMAN_PLAYER);
     if (isDraw(board)) return 0;
-    // Check win
     for (let r = 0; r < ROWS; r++) {
       for (let c = 0; c < COLS; c++) {
         if (board[r][c] !== null && getWinCells(board, r, c) !== null) {
@@ -142,6 +143,18 @@ export function getBestMove(board: Board, difficulty: AiDifficulty): number {
   // Easy: sometimes pick randomly
   if (difficulty === "easy" && Math.random() < 0.4) {
     return cols[Math.floor(Math.random() * cols.length)];
+  }
+
+  // Always take an immediate win
+  for (const col of cols) {
+    const result = applyMove(board, col, AI_PLAYER);
+    if (result && getWinCells(result.board, result.row, col)) return col;
+  }
+
+  // Always block an immediate human win
+  for (const col of cols) {
+    const result = applyMove(board, col, HUMAN_PLAYER);
+    if (result && getWinCells(result.board, result.row, col)) return col;
   }
 
   const depth = DEPTH[difficulty];

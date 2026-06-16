@@ -5,8 +5,8 @@ import styled, { css } from "styled-components";
 type Variant = "primary" | "ghost" | "danger";
 
 interface Props {
-  variant?: Variant;
-  small?: boolean;
+  $variant?: Variant;
+  $small?: boolean;
 }
 
 const Button = styled.button<Props>`
@@ -14,9 +14,9 @@ const Button = styled.button<Props>`
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  padding: ${({ small }) => (small ? "var(--space-2) var(--space-4)" : "var(--space-3) var(--space-6)")};
+  padding: ${({ $small }) => ($small ? "var(--space-2) var(--space-4)" : "var(--space-3) var(--space-6)")};
   border-radius: var(--radius-full);
-  font-size: ${({ small }) => (small ? "var(--font-size-sm)" : "var(--font-size-md)")};
+  font-size: ${({ $small }) => ($small ? "var(--font-size-sm)" : "var(--font-size-md)")};
   font-weight: 600;
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -24,8 +24,8 @@ const Button = styled.button<Props>`
   transition: all var(--transition-normal);
   white-space: nowrap;
 
-  ${({ variant = "primary" }) =>
-    variant === "primary" &&
+  ${({ $variant = "primary" }) =>
+    $variant === "primary" &&
     css`
       background: linear-gradient(135deg, var(--color-accent), #0099CC);
       color: #000;
@@ -38,8 +38,8 @@ const Button = styled.button<Props>`
       &:active { transform: translateY(0); }
     `}
 
-  ${({ variant }) =>
-    variant === "ghost" &&
+  ${({ $variant }) =>
+    $variant === "ghost" &&
     css`
       background: transparent;
       color: var(--color-text-muted);
@@ -51,8 +51,8 @@ const Button = styled.button<Props>`
       }
     `}
 
-  ${({ variant }) =>
-    variant === "danger" &&
+  ${({ $variant }) =>
+    $variant === "danger" &&
     css`
       background: transparent;
       color: var(--color-p1);

@@ -13,8 +13,9 @@ export default function StyledComponentsRegistry({ children }: { children: React
     return <>{styles}</>;
   });
 
-  if (typeof window !== "undefined") return <>{children}</>;
-
+  // Always wrap with StyleSheetManager (not just on server) to avoid a
+  // server/client render mismatch that causes a Next.js hydration error.
+  // Styled-components handles its own client-side injection regardless.
   return (
     <StyleSheetManager sheet={sheet.instance}>
       {children}

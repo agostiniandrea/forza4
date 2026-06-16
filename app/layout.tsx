@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { Space_Grotesk, Sarabun } from "next/font/google";
-import { getLocale } from "next-intl/server";
+import type { Metadata, Viewport } from "next";
+import { Space_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import StyledComponentsRegistry from "@/lib/registry";
@@ -13,21 +13,25 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
-const sarabun = Sarabun({
-  subsets: ["thai", "latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-sarabun",
-  display: "swap",
-});
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
-export default async function RootLayout({ children }: { children: ReactNode }) {
-  const locale = await getLocale();
+export const metadata: Metadata = {
+  title: "Forza 4",
+  description: "A beautiful, accessible Connect Four game. Play against a friend or vs AI.",
+  openGraph: {
+    title: "Forza 4",
+    description: "A beautiful, accessible Connect Four game. Play against a friend or vs AI.",
+    type: "website",
+    url: "https://forza4-game.vercel.app",
+  },
+};
+
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html
-      lang={locale}
-      suppressHydrationWarning
-      className={`${spaceGrotesk.variable} ${sarabun.variable}`}
-    >
+    <html lang="en" suppressHydrationWarning className={spaceGrotesk.variable}>
       <body suppressHydrationWarning>
         <StyledComponentsRegistry>
           {children}

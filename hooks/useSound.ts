@@ -6,22 +6,28 @@ import * as SoundEngine from "@/lib/sound-engine";
 export function useSound() {
   const [enabled, setEnabled] = useState(true);
 
-  const play = useCallback(
-    (fn: () => void) => {
-      if (enabled) fn();
-    },
+  const toggle = useCallback(() => setEnabled((v) => !v), []);
+
+  const playDrop = useCallback(
+    (player: 1 | 2) => { if (enabled) SoundEngine.playDrop(player); },
+    [enabled]
+  );
+  const playWin = useCallback(
+    () => { if (enabled) SoundEngine.playWin(); },
+    [enabled]
+  );
+  const playDraw = useCallback(
+    () => { if (enabled) SoundEngine.playDraw(); },
+    [enabled]
+  );
+  const playReset = useCallback(
+    () => { if (enabled) SoundEngine.playReset(); },
+    [enabled]
+  );
+  const playHover = useCallback(
+    () => { if (enabled) SoundEngine.playHover(); },
     [enabled]
   );
 
-  const toggle = useCallback(() => setEnabled((v) => !v), []);
-
-  return {
-    enabled,
-    toggle,
-    playDrop: (player: 1 | 2) => play(() => SoundEngine.playDrop(player)),
-    playWin: () => play(SoundEngine.playWin),
-    playDraw: () => play(SoundEngine.playDraw),
-    playReset: () => play(SoundEngine.playReset),
-    playHover: () => play(SoundEngine.playHover),
-  };
+  return { enabled, toggle, playDrop, playWin, playDraw, playReset, playHover };
 }

@@ -1,8 +1,6 @@
 "use client";
 
 import styled from "styled-components";
-import { useTranslations } from "next-intl";
-import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
 import { mq } from "@/lib/breakpoints";
 
 const Nav = styled.header`
@@ -58,7 +56,7 @@ const Controls = styled.div`
   gap: var(--space-4);
 `;
 
-const SoundBtn = styled.button<{ $on: boolean }>`
+const IconBtn = styled.button<{ $on?: boolean }>`
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -87,11 +85,9 @@ interface Props {
 }
 
 export default function Header({ soundEnabled, onToggleSound, isFullscreen, onToggleFullscreen }: Props) {
-  const t = useTranslations("Header");
-
   return (
     <Nav>
-      <Logo aria-label={t("logoAlt")}>
+      <Logo aria-label="Forza 4">
         <LogoIcon aria-hidden="true">
           <Dot $p={1} />
           <Dot $p={2} />
@@ -101,21 +97,19 @@ export default function Header({ soundEnabled, onToggleSound, isFullscreen, onTo
         <LogoText>FORZA 4</LogoText>
       </Logo>
       <Controls>
-        <LanguageSwitcher />
-        <SoundBtn
+        <IconBtn
           $on={soundEnabled}
           onClick={onToggleSound}
-          aria-label={soundEnabled ? t("soundOn") : t("soundOff")}
-          title={t("toggleSound")}
+          aria-label={soundEnabled ? "Sound on" : "Sound off"}
+          title="Toggle sound"
         >
           {soundEnabled ? "🔊" : "🔇"}
-        </SoundBtn>
+        </IconBtn>
         {onToggleFullscreen && (
-          <SoundBtn
-            $on={false}
+          <IconBtn
             onClick={onToggleFullscreen}
-            aria-label={isFullscreen ? t("exitFullscreen") : t("enterFullscreen")}
-            title={isFullscreen ? t("exitFullscreen") : t("enterFullscreen")}
+            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+            title={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
           >
             {isFullscreen ? (
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -126,7 +120,7 @@ export default function Header({ soundEnabled, onToggleSound, isFullscreen, onTo
                 <path d="M5 1H1v4M11 1h4v4M11 15h4v-4M5 15H1v-4" />
               </svg>
             )}
-          </SoundBtn>
+          </IconBtn>
         )}
       </Controls>
     </Nav>

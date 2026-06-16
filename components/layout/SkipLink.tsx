@@ -1,7 +1,6 @@
 "use client";
 
 import styled from "styled-components";
-import { useTranslations } from "next-intl";
 
 const Link = styled.a`
   position: absolute;
@@ -25,6 +24,5 @@ const Link = styled.a`
 `;
 
 export default function SkipLink() {
-  const t = useTranslations("Layout");
-  return <Link href="#main-content">{t("skipToContent")}</Link>;
+  return <Link href="#main-content">Skip to main content</Link>;
 }

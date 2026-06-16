@@ -1,7 +1,6 @@
 "use client";
 
 import styled from "styled-components";
-import { useTranslations } from "next-intl";
 import type { GameMode } from "@/hooks/useGame";
 import type { AiDifficulty } from "@/lib/ai";
 import Button from "@/components/ui/Button";
@@ -13,6 +12,10 @@ const Container = styled.div`
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
+
+  ${mq.md} {
+    gap: var(--space-4);
+  }
 `;
 
 const Group = styled.div`
@@ -33,8 +36,7 @@ const SegmentBtn = styled.button<{ $active: boolean }>`
   font-weight: ${({ $active }) => ($active ? 600 : 400)};
   cursor: pointer;
   transition: all var(--transition-fast);
-  background: ${({ $active }) =>
-    $active ? "var(--color-accent)" : "transparent"};
+  background: ${({ $active }) => ($active ? "var(--color-accent)" : "transparent")};
   color: ${({ $active }) => ($active ? "#000" : "var(--color-text-muted)")};
 
   &:hover {
@@ -44,53 +46,45 @@ const SegmentBtn = styled.button<{ $active: boolean }>`
   }
 `;
 
-const Label = styled.span`
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding-left: var(--space-2);
-`;
-
 interface Props {
   mode: GameMode;
   difficulty: AiDifficulty;
+  gameInProgress: boolean;
+  isGameOver: boolean;
   onSetMode: (mode: GameMode) => void;
   onSetDifficulty: (d: AiDifficulty) => void;
   onReset: () => void;
 }
 
-export default function GameControls({
-  mode,
-  difficulty,
-  onSetMode,
-  onSetDifficulty,
-  onReset,
-}: Props) {
-  const t = useTranslations("Mode");
-  const tg = useTranslations("Game");
+export default function GameControls({ mode, difficulty, gameInProgress, isGameOver, onSetMode, onSetDifficulty, onReset }: Props) {
+  // Game over: hide controls entirely — only "Play again" (StatusArea) is visible
+  if (isGameOver) return null;
 
+  // Game in progress: just a small "New game" escape hatch
+  if (gameInProgress) {
+    return (
+      <Container>
+        <Button $variant="ghost" $small onClick={onReset}>
+          ↺ New game
+        </Button>
+      </Container>
+    );
+  }
+
+  // No moves yet: show mode/difficulty pickers only — game starts on first board click
   return (
     <Container>
-      <Group role="group" aria-label={t("label")}>
-        <SegmentBtn
-          $active={mode === "2p"}
-          onClick={() => onSetMode("2p")}
-          aria-pressed={mode === "2p"}
-        >
-          {t("twoPlayers")}
+      <Group role="group" aria-label="Game mode">
+        <SegmentBtn $active={mode === "2p"} onClick={() => onSetMode("2p")} aria-pressed={mode === "2p"}>
+          2 Players
         </SegmentBtn>
-        <SegmentBtn
-          $active={mode === "ai"}
-          onClick={() => onSetMode("ai")}
-          aria-pressed={mode === "ai"}
-        >
-          {t("vsAi")}
+        <SegmentBtn $active={mode === "ai"} onClick={() => onSetMode("ai")} aria-pressed={mode === "ai"}>
+          vs AI
         </SegmentBtn>
       </Group>
 
       {mode === "ai" && (
-        <Group role="group" aria-label={t("difficulty")}>
+        <Group role="group" aria-label="Difficulty">
           {(["easy", "medium", "hard"] as AiDifficulty[]).map((d) => (
             <SegmentBtn
               key={d}
@@ -98,15 +92,11 @@ export default function GameControls({
               onClick={() => onSetDifficulty(d)}
               aria-pressed={difficulty === d}
             >
-              {t(d)}
+              {d.charAt(0).toUpperCase() + d.slice(1)}
             </SegmentBtn>
           ))}
         </Group>
       )}
-
-      <Button variant="ghost" small onClick={onReset}>
-        ↺ {tg("newGame")}
-      </Button>
     </Container>
   );
 }
