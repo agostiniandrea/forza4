@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import styled from "styled-components";
-import { useTranslations } from "next-intl";
 import { useGame } from "@/hooks/useGame";
 import { useSound } from "@/hooks/useSound";
 import { useAnnouncer } from "@/hooks/useAnnouncer";
@@ -56,8 +55,7 @@ const TurnLabel = styled.p<{ $player: 1 | 2 }>`
   margin: 0;
   font-size: var(--font-size-md);
   font-weight: 500;
-  color: ${({ $player }) =>
-    $player === 1 ? "var(--color-p1)" : "var(--color-p2)"};
+  color: ${({ $player }) => ($player === 1 ? "var(--color-p1)" : "var(--color-p2)")};
   letter-spacing: 0.04em;
   transition: color var(--transition-normal);
 `;
@@ -70,8 +68,6 @@ const BoardSection = styled.div`
 `;
 
 export default function GamePage() {
-  const t = useTranslations("Game");
-  const ta = useTranslations("Accessibility");
   const announce = useAnnouncer();
 
   const {
@@ -113,31 +109,25 @@ export default function GamePage() {
     }
   }
 
-  // Announce status changes to screen readers
   useEffect(() => {
     if (game.status === prevStatusRef.current) return;
     prevStatusRef.current = game.status;
     if (game.status === "won") {
       const name =
         mode === "ai"
-          ? game.winner === 1
-            ? t("you")
-            : t("ai")
-          : game.winner === 1
-          ? t("player1")
-          : t("player2");
-      announce(t("wins", { name }));
+          ? game.winner === 1 ? "You" : "AI"
+          : game.winner === 1 ? "Red" : "Yellow";
+      announce(`${name} wins!`);
       sound.playWin();
     } else if (game.status === "draw") {
-      announce(t("draw"));
+      announce("It's a draw!");
       sound.playDraw();
     }
-  }, [game.status, game.winner, mode, announce, t, sound]);
+  }, [game.status, game.winner, mode, announce, sound]);
 
   function handleColumnClick(col: number) {
     if (game.status !== "playing" || isAiThinking) return;
 
-    const currentPlayer = game.currentPlayer;
     const dropRow = game.board
       .map((row) => row[col])
       .reduceRight((acc, cell, i) => (acc === -1 && cell === null ? i : acc), -1);
@@ -148,12 +138,11 @@ export default function GamePage() {
         setDroppingCell({ row: dropRow, col });
         setTimeout(() => setDroppingCell(null), 500);
       }
-      announce(
-        t("pieceDropped", {
-          player: player === 1 ? t("player1") : t("player2"),
-          col: col + 1,
-        })
-      );
+      const playerName =
+        mode === "ai"
+          ? player === 1 ? "You" : "AI"
+          : player === 1 ? "Red" : "Yellow";
+      announce(`${playerName} dropped in column ${col + 1}`);
     });
   }
 
@@ -170,6 +159,12 @@ export default function GamePage() {
   }
 
   const isGameOver = game.status === "won" || game.status === "draw";
+  const gameInProgress = game.status === "playing" && game.lastMove !== null;
+
+  function getTurnText(): string {
+    if (mode === "ai") return isAiThinking ? "AI thinking…" : "Your turn";
+    return "";
+  }
 
   return (
     <PageWrapper>
@@ -219,13 +214,7 @@ export default function GamePage() {
               />
             ) : (
               <TurnLabel $player={game.currentPlayer} aria-live="polite">
-                {isAiThinking
-                  ? `${t("ai")}...`
-                  : mode === "ai" && game.currentPlayer === 1
-                  ? t("playerTurn", { player: t("you") })
-                  : mode === "ai" && game.currentPlayer === 2
-                  ? `${t("ai")}...`
-                  : t("playerTurn", { player: game.currentPlayer })}
+                {getTurnText()}
               </TurnLabel>
             )}
           </StatusArea>
@@ -233,6 +222,7 @@ export default function GamePage() {
           <GameControls
             mode={mode}
             difficulty={aiDifficulty}
+            gameInProgress={gameInProgress}
             onSetMode={setMode}
             onSetDifficulty={setDifficulty}
             onReset={handleReset}

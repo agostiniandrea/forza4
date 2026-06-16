@@ -1,7 +1,6 @@
 "use client";
 
 import styled, { keyframes } from "styled-components";
-import { useTranslations } from "next-intl";
 import type { Player } from "@/lib/game-engine";
 import type { GameMode } from "@/hooks/useGame";
 import Button from "@/components/ui/Button";
@@ -61,16 +60,12 @@ interface Props {
 }
 
 export default function GameStatus({ winner, isDraw, mode, onPlayAgain }: Props) {
-  const t = useTranslations("Game");
-
   if (!winner && !isDraw) return null;
 
   function getMessage() {
-    if (isDraw) return t("draw");
-    if (mode === "ai") {
-      return winner === 1 ? t("youWin") : t("aiWins");
-    }
-    return winner === 1 ? t("player1Wins") : t("player2Wins");
+    if (isDraw) return "It's a draw!";
+    if (mode === "ai") return winner === 1 ? "You win!" : "AI wins!";
+    return winner === 1 ? "Red wins!" : "Yellow wins!";
   }
 
   const emoji = isDraw ? "🤝" : winner === 1 ? "🎉" : mode === "ai" ? "🤖" : "🏆";
@@ -79,7 +74,7 @@ export default function GameStatus({ winner, isDraw, mode, onPlayAgain }: Props)
     <Overlay role="alert" aria-live="assertive">
       <Emoji aria-hidden="true">{emoji}</Emoji>
       <WinText $player={winner ?? undefined}>{getMessage()}</WinText>
-      <Button onClick={onPlayAgain}>{t("playAgain")}</Button>
+      <Button onClick={onPlayAgain}>Play again</Button>
     </Overlay>
   );
 }

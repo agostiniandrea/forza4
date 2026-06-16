@@ -2,7 +2,6 @@
 
 import { useRef, useCallback, useEffect } from "react";
 import styled, { css, keyframes } from "styled-components";
-import { useTranslations } from "next-intl";
 import type { Board as BoardType, Player } from "@/lib/game-engine";
 import { ROWS, COLS, getDropRow, isColumnFull } from "@/lib/game-engine";
 import Piece from "./Piece";
@@ -37,9 +36,7 @@ const DropArrow = styled.div<{ $visible: boolean; $player: Player }>`
   transition: opacity var(--transition-fast);
   color: ${({ $player }) => ($player === 1 ? "var(--color-p1)" : "var(--color-p2)")};
   animation: ${({ $visible }) =>
-    $visible
-      ? css`${hoverPulse} 0.8s ease-in-out infinite`
-      : "none"};
+    $visible ? css`${hoverPulse} 0.8s ease-in-out infinite` : "none"};
 `;
 
 const BoardFrame = styled.div`
@@ -65,7 +62,7 @@ const ColumnButton = styled.button<{ $disabled: boolean }>`
   cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
 `;
 
-const Cell = styled.div<{ $hovering: boolean; $hasWinPiece: boolean }>`
+const Cell = styled.div<{ $hovering: boolean; $hasWinPiece: boolean; $dropping: boolean }>`
   width: var(--cell-size);
   height: var(--cell-size);
   border-radius: 50%;
@@ -75,19 +72,21 @@ const Cell = styled.div<{ $hovering: boolean; $hasWinPiece: boolean }>`
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: hidden;
   transition: background var(--transition-fast), box-shadow var(--transition-fast);
 
+  ${({ $dropping }) =>
+    $dropping && css`
+      z-index: 10;
+    `}
+
   ${({ $hovering }) =>
-    $hovering &&
-    css`
+    $hovering && css`
       background: rgba(255, 255, 255, 0.04);
       box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.06);
     `}
 
   ${({ $hasWinPiece }) =>
-    $hasWinPiece &&
-    css`
+    $hasWinPiece && css`
       background: rgba(255, 215, 0, 0.04);
     `}
 `;
@@ -115,7 +114,6 @@ export default function Board({
   onColumnHover,
   onColumnLeave,
 }: Props) {
-  const t = useTranslations("Accessibility");
   const boardRef = useRef<HTMLDivElement>(null);
   const hoveredCol = selectedCol;
 
@@ -143,14 +141,12 @@ export default function Board({
     [disabled, selectedCol, onColumnClick, onColumnHover]
   );
 
-  // Auto-focus board on mount so keyboard works immediately
   useEffect(() => {
     boardRef.current?.focus();
   }, []);
 
   return (
     <BoardWrapper>
-      {/* Column drop arrows */}
       <ColumnIndicator aria-hidden="true">
         {Array.from({ length: COLS }, (_, col) => (
           <DropArrow
@@ -167,7 +163,7 @@ export default function Board({
         <Grid
           ref={boardRef}
           role="grid"
-          aria-label={t("board", { rows: ROWS, cols: COLS })}
+          aria-label={`Connect Four board, ${ROWS} rows by ${COLS} columns`}
           aria-describedby="keyboard-hint"
           tabIndex={0}
           onKeyDown={handleKeyDown}
@@ -177,18 +173,13 @@ export default function Board({
             Array.from({ length: COLS }, (_, col) => {
               const cell = board[row][col];
               const isWin = winSet.has(`${row}-${col}`);
-              const isDropping =
-                droppingCell?.row === row && droppingCell?.col === col;
+              const isDropping = droppingCell?.row === row && droppingCell?.col === col;
               const isHovered = !disabled && col === hoveredCol && !cell;
 
               let ariaLabel: string;
-              if (!cell) ariaLabel = t("cellEmpty");
-              else if (isWin)
-                ariaLabel = t(
-                  cell === 1 ? "winCellPlayer1" : "winCellPlayer2"
-                );
-              else
-                ariaLabel = t(cell === 1 ? "cellPlayer1" : "cellPlayer2");
+              if (!cell) ariaLabel = "Empty";
+              else if (isWin) ariaLabel = cell === 1 ? "Red disc — winning piece" : "Yellow disc — winning piece";
+              else ariaLabel = cell === 1 ? "Red disc" : "Yellow disc";
 
               return (
                 <Cell
@@ -197,6 +188,7 @@ export default function Board({
                   aria-label={ariaLabel}
                   $hovering={isHovered}
                   $hasWinPiece={isWin}
+                  $dropping={isDropping}
                   onClick={() => !disabled && onColumnClick(col)}
                   onMouseEnter={() => !disabled && onColumnHover(col)}
                   onMouseLeave={onColumnLeave}
@@ -218,7 +210,7 @@ export default function Board({
       </BoardFrame>
 
       <p id="keyboard-hint" className="sr-only">
-        {t("keyboardHint")}
+        Use arrow keys to choose column, Enter to drop
       </p>
     </BoardWrapper>
   );
