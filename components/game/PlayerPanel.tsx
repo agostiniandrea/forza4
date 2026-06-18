@@ -78,14 +78,24 @@ const BigDisc = styled.div<{ $player: Player; $active: boolean; $winner: boolean
   border-radius: 50%;
   background: ${({ $player }) =>
     $player === 1
-      ? "radial-gradient(circle at 32% 28%, var(--color-p1-light), var(--color-p1), var(--color-p1-dark))"
-      : "radial-gradient(circle at 32% 28%, var(--color-p2-light), var(--color-p2), var(--color-p2-dark))"};
+      ? `radial-gradient(circle at 30% 25%, rgba(255,255,255,0.55) 0%, transparent 40%),
+         radial-gradient(circle at 35% 30%, #ff8585 0%, var(--color-p1) 38%, var(--color-p1-dark) 70%, #770000 100%)`
+      : `radial-gradient(circle at 30% 25%, rgba(255,255,255,0.6) 0%, transparent 40%),
+         radial-gradient(circle at 35% 30%, #ffe87c 0%, var(--color-p2) 38%, var(--color-p2-dark) 70%, #7a5500 100%)`};
   box-shadow: ${({ $player, $active, $winner }) =>
     $winner
-      ? `0 0 40px ${$player === 1 ? "var(--color-p1-glow)" : "var(--color-p2-glow)"}, 0 6px 24px rgba(0,0,0,0.5)`
+      ? `0 0 50px ${$player === 1 ? "var(--color-p1-glow)" : "var(--color-p2-glow)"},
+         0 8px 30px rgba(0,0,0,0.7),
+         inset 0 -4px 12px rgba(0,0,0,0.45),
+         inset 0 3px 8px rgba(255,255,255,0.5)`
       : $active
-      ? `0 0 20px ${$player === 1 ? "var(--color-p1-glow-soft)" : "var(--color-p2-glow-soft)"}, 0 4px 16px rgba(0,0,0,0.4)`
-      : "0 4px 16px rgba(0,0,0,0.4)"};
+      ? `0 0 28px ${$player === 1 ? "var(--color-p1-glow-soft)" : "var(--color-p2-glow-soft)"},
+         0 6px 22px rgba(0,0,0,0.6),
+         inset 0 -4px 12px rgba(0,0,0,0.4),
+         inset 0 3px 8px rgba(255,255,255,0.45)`
+      : `0 6px 20px rgba(0,0,0,0.6),
+         inset 0 -4px 12px rgba(0,0,0,0.4),
+         inset 0 3px 8px rgba(255,255,255,0.38)`};
   animation: ${({ $active, $winner }) => ($active && !$winner) ? css`${pulse} 1.4s ease-in-out infinite` : "none"};
   transition: box-shadow var(--transition-normal);
 `;

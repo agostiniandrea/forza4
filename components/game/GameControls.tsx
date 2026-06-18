@@ -9,8 +9,8 @@ import { mq } from "@/lib/breakpoints";
 const Bar = styled.div`
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  padding: var(--space-5) var(--space-4);
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
   border-top: 1px solid var(--color-border);
   background: rgba(7, 8, 15, 0.6);
   backdrop-filter: blur(8px);
@@ -19,6 +19,7 @@ const Bar = styled.div`
     flex-direction: row;
     align-items: flex-end;
     justify-content: space-between;
+    gap: var(--space-4);
     padding: var(--space-4) var(--space-8);
   }
 `;

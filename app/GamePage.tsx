@@ -60,7 +60,7 @@ const DesktopMain = styled.main`
     flex: 1;
     min-height: 0;
     display: grid;
-    grid-template-columns: clamp(200px, 20vw, 300px) 1fr clamp(200px, 20vw, 300px);
+    grid-template-columns: clamp(220px, 22vw, 340px) 1fr clamp(220px, 22vw, 340px);
     gap: clamp(var(--space-4), 2vw, var(--space-8));
     padding: clamp(var(--space-4), 2vh, var(--space-8)) clamp(var(--space-6), 3vw, var(--space-10));
     align-items: stretch;

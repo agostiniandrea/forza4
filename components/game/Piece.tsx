@@ -34,13 +34,25 @@ const PieceEl = styled.div<PieceProps>`
   ${({ $player }) =>
     $player === 1
       ? css`
-          background: radial-gradient(circle at 35% 35%, var(--color-p1-light), var(--color-p1) 60%, var(--color-p1-dark));
-          box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25);
+          background:
+            radial-gradient(circle at 30% 26%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 42%),
+            radial-gradient(circle at 38% 33%, #ff8585 0%, var(--color-p1) 38%, var(--color-p1-dark) 70%, #770000 100%);
+          box-shadow:
+            0 5px 16px rgba(0,0,0,0.8),
+            0 2px 6px rgba(0,0,0,0.5),
+            inset 0 -3px 9px rgba(0,0,0,0.45),
+            inset 0 2px 6px rgba(255,255,255,0.5);
           color: var(--color-p1);
         `
       : css`
-          background: radial-gradient(circle at 35% 35%, var(--color-p2-light), var(--color-p2) 60%, var(--color-p2-dark));
-          box-shadow: 0 2px 8px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+          background:
+            radial-gradient(circle at 30% 26%, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 42%),
+            radial-gradient(circle at 38% 33%, #ffe87c 0%, var(--color-p2) 38%, var(--color-p2-dark) 70%, #7a5500 100%);
+          box-shadow:
+            0 5px 16px rgba(0,0,0,0.8),
+            0 2px 6px rgba(0,0,0,0.5),
+            inset 0 -3px 9px rgba(0,0,0,0.4),
+            inset 0 2px 6px rgba(255,255,255,0.55);
           color: var(--color-p2);
         `}
 

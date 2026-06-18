@@ -50,10 +50,13 @@ const BoardFrame = styled.div`
   border-radius: var(--board-radius);
   padding: var(--board-padding);
   box-shadow:
-    0 0 0 1px var(--color-border),
-    0 8px 48px rgba(0, 0, 0, 0.7),
-    0 0 60px rgba(0, 50, 180, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 0 0 1px rgba(255,255,255,0.08),
+    0 0 0 3px rgba(0,10,50,0.7),
+    0 12px 60px rgba(0,0,0,0.9),
+    0 4px 20px rgba(0,0,0,0.65),
+    0 0 80px rgba(0,50,200,0.18),
+    inset 0 2px 4px rgba(255,255,255,0.08),
+    inset 0 -2px 6px rgba(0,0,0,0.5);
 `;
 
 const Grid = styled.div`
@@ -72,13 +75,19 @@ const Cell = styled.div<{ $hovering: boolean; $hasWinPiece: boolean; $dropping: 
   width: var(--cell-size);
   height: var(--cell-size);
   border-radius: 50%;
-  background: var(--color-cell-empty);
-  border: 1px solid var(--color-cell-ring);
+  background: radial-gradient(circle at 50% 60%, #060c20 0%, var(--color-cell-empty) 70%);
+  border: 1px solid rgba(0,0,0,0.55);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   transition: background var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow:
+    inset 0 5px 12px rgba(0,0,0,0.85),
+    inset 0 2px 5px rgba(0,0,0,0.6),
+    inset 2px 0 4px rgba(0,0,0,0.25),
+    inset -2px 0 4px rgba(0,0,0,0.25),
+    inset 0 -1px 3px rgba(255,255,255,0.03);
 
   ${({ $dropping }) =>
     $dropping && css`
@@ -87,13 +96,16 @@ const Cell = styled.div<{ $hovering: boolean; $hasWinPiece: boolean; $dropping: 
 
   ${({ $hovering }) =>
     $hovering && css`
-      background: rgba(255, 255, 255, 0.04);
-      box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.06);
+      background: radial-gradient(circle at 50% 60%, #0d1830 0%, rgba(255,255,255,0.05) 70%);
+      box-shadow:
+        inset 0 5px 12px rgba(0,0,0,0.75),
+        inset 0 2px 5px rgba(0,0,0,0.5),
+        inset 0 0 14px rgba(255,255,255,0.06);
     `}
 
   ${({ $hasWinPiece }) =>
     $hasWinPiece && css`
-      background: rgba(255, 215, 0, 0.04);
+      background: radial-gradient(circle at 50% 60%, #0a0c10 0%, rgba(255,215,0,0.06) 70%);
     `}
 `;
 
