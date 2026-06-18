@@ -64,10 +64,10 @@
   --space-16: 64px;
 
   /* Board sizing — fluid, scales with both width and height */
-  --cell-size:         clamp(36px, min(9vw, 9vh), 76px);
-  --cell-gap:          clamp(3px, min(0.8vw, 0.8vh), 7px);
-  --board-padding:     clamp(8px, min(2vw, 2vh), 18px);
-  --board-radius:      clamp(12px, 2vw, 20px);
+  --cell-size:         clamp(36px, min(9vw, 9vh), 92px);
+  --cell-gap:          clamp(3px, min(0.8vw, 0.8vh), 9px);
+  --board-padding:     clamp(8px, min(2vw, 2vh), 22px);
+  --board-radius:      clamp(12px, 2vw, 22px);
 
   /* Radius */
   --radius-sm:  6px;

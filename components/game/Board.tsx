@@ -24,6 +24,8 @@ const ColumnIndicator = styled.div`
   padding: 0 var(--board-padding);
   margin-bottom: var(--space-2);
   height: 32px;
+
+  @media (hover: none) { visibility: hidden; }
 `;
 
 const DropIndicator = styled.div<{ $visible: boolean; $player: Player }>`
