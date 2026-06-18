@@ -1,38 +1,28 @@
 "use client";
 
-import { Fragment } from "react";
 import styled, { css, keyframes } from "styled-components";
 import type { Player } from "@/lib/game-engine";
-import { mq } from "@/lib/breakpoints";
 
 const pulse = keyframes`
   0%, 100% { opacity: 1; transform: scale(1); }
   50%       { opacity: 0.7; transform: scale(0.92); }
 `;
 
-const shimmer = keyframes`
-  from { background-position: -200% center; }
-  to   { background-position: 200% center; }
-`;
-
 const Container = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
   gap: var(--space-3);
   width: 100%;
-
-  ${mq.md} {
-    gap: var(--space-6);
-  }
 `;
 
 const PlayerCard = styled.div<{ $player: Player; $active: boolean; $winner: boolean }>`
+  flex: 1;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-4);
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
   border: 1px solid
     ${({ $player, $active, $winner }) =>
@@ -46,64 +36,80 @@ const PlayerCard = styled.div<{ $player: Player; $active: boolean; $winner: bool
       ? $player === 1 ? "var(--color-p1-glow-soft)" : "var(--color-p2-glow-soft)"
       : $active
       ? $player === 1 ? "rgba(255, 59, 59, 0.08)" : "rgba(255, 215, 0, 0.08)"
-      : "transparent"};
+      : "var(--color-surface)"};
+  box-shadow: ${({ $active, $winner, $player }) =>
+    ($winner || $active)
+      ? `0 0 20px ${$player === 1 ? "var(--color-p1-glow-soft)" : "var(--color-p2-glow-soft)"}`
+      : "none"};
   transition: border-color var(--transition-normal), background var(--transition-normal), box-shadow var(--transition-normal);
+  min-height: 110px;
+`;
 
-  ${({ $active, $winner, $player }) =>
-    $active && !$winner && css`
-      box-shadow: 0 0 20px ${$player === 1 ? "var(--color-p1-glow-soft)" : "var(--color-p2-glow-soft)"};
-    `}
+const TopRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 `;
 
 const Disc = styled.div<{ $player: Player; $active: boolean }>`
-  width: 22px;
-  height: 22px;
+  width: 12px;
+  height: 12px;
   flex-shrink: 0;
   border-radius: 50%;
   background: ${({ $player }) =>
     $player === 1
       ? "radial-gradient(circle at 35% 35%, var(--color-p1-light), var(--color-p1))"
       : "radial-gradient(circle at 35% 35%, var(--color-p2-light), var(--color-p2))"};
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   animation: ${({ $active }) => $active ? css`${pulse} 1.2s ease-in-out infinite` : "none"};
 `;
 
-const Score = styled.span`
-  font-size: var(--font-size-xl);
+const PlayerName = styled.span<{ $player: Player }>`
+  font-size: var(--font-size-xs);
   font-weight: 700;
-  color: var(--color-text);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: ${({ $player }) => $player === 1 ? "var(--color-p1)" : "var(--color-p2)"};
+`;
+
+const Score = styled.span<{ $player: Player }>`
+  font-size: clamp(36px, 10vw, 52px);
+  font-weight: 800;
   line-height: 1;
-  min-width: 1.5ch;
-  text-align: center;
-`;
-
-const Separator = styled.span`
-  font-size: var(--font-size-md);
-  color: var(--color-text-muted);
-  font-weight: 300;
-  align-self: center;
-  text-align: center;
-  min-width: 48px;
-`;
-
-const ResultText = styled.span<{ $player?: Player }>`
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  align-self: center;
-  text-align: center;
-  min-width: 64px;
-  background: ${({ $player }) =>
+  font-variant-numeric: tabular-nums;
+  color: ${({ $player }) => $player === 1 ? "var(--color-p1)" : "var(--color-p2)"};
+  text-shadow: ${({ $player }) =>
     $player === 1
-      ? "linear-gradient(135deg, var(--color-p1-light), var(--color-p1))"
-      : $player === 2
-      ? "linear-gradient(135deg, var(--color-p2-light), var(--color-p2))"
-      : "linear-gradient(135deg, #aaa, #ccc)"};
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: ${shimmer} 2s linear infinite;
+      ? "0 0 20px var(--color-p1-glow)"
+      : "0 0 20px var(--color-p2-glow)"};
+`;
+
+const TurnBadge = styled.div<{ $player: Player; $visible: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  background: ${({ $player }) => $player === 1 ? "rgba(255,59,59,0.12)" : "rgba(255,215,0,0.12)"};
+  opacity: ${({ $visible }) => $visible ? 1 : 0};
+  min-height: 22px;
+  transition: opacity var(--transition-normal);
+`;
+
+const TurnDot = styled.span<{ $player: Player }>`
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: ${({ $player }) => $player === 1 ? "var(--color-p1)" : "var(--color-p2)"};
+`;
+
+const TurnText = styled.span`
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-text);
+  white-space: nowrap;
 `;
 
 interface Props {
@@ -111,33 +117,46 @@ interface Props {
   winner: Player | null;
   isDraw: boolean;
   scores: { 1: number; 2: number };
-  resultLabel?: string;
+  names: { 1: string; 2: string };
+  turnLabels: { 1: string; 2: string };
 }
 
-export default function PlayerIndicator({ currentPlayer, winner, isDraw, scores, resultLabel }: Props) {
+export default function PlayerIndicator({ currentPlayer, winner, isDraw, scores, names, turnLabels }: Props) {
   const isGameOver = !!winner || isDraw;
 
   return (
     <Container>
-      {([1, 2] as Player[]).map((p, i) => (
-        <Fragment key={p}>
-          {i === 1 && (
-            isGameOver && resultLabel
-              ? <ResultText $player={winner ?? undefined} aria-live="polite">{resultLabel}</ResultText>
-              : <Separator aria-hidden="true">vs</Separator>
-          )}
+      {([1, 2] as Player[]).map((p) => {
+        const isActive = !isGameOver && currentPlayer === p;
+        const isWinner = winner === p;
+        const label = isWinner ? "Winner!" : isDraw ? "Draw" : turnLabels[p];
+        const badgeVisible = isWinner || isDraw || (isActive && !!label);
+
+        return (
           <PlayerCard
+            key={p}
             $player={p}
-            $active={!isGameOver && currentPlayer === p}
-            $winner={winner === p}
-            aria-current={!isGameOver && currentPlayer === p ? "true" : undefined}
-            aria-label={`Player ${p}, score ${scores[p]}`}
+            $active={isActive}
+            $winner={isWinner}
+            aria-label={`${names[p]}, score ${scores[p]}`}
+            aria-current={isActive ? "true" : undefined}
           >
-            <Disc $player={p} $active={!isGameOver && currentPlayer === p} />
-            <Score aria-hidden="true">{scores[p]}</Score>
+            <TopRow>
+              <Disc $player={p} $active={isActive} />
+              <PlayerName $player={p}>{names[p]}</PlayerName>
+            </TopRow>
+
+            <Score $player={p} aria-hidden="true">
+              {String(scores[p]).padStart(2, "0")}
+            </Score>
+
+            <TurnBadge $player={p} $visible={badgeVisible}>
+              <TurnDot $player={p} />
+              <TurnText>{label || "​"}</TurnText>
+            </TurnBadge>
           </PlayerCard>
-        </Fragment>
-      ))}
+        );
+      })}
     </Container>
   );
 }

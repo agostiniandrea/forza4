@@ -6,15 +6,19 @@ import type { Player } from "@/lib/game-engine";
 import { useGame } from "@/hooks/useGame";
 import { useSound } from "@/hooks/useSound";
 import { useAnnouncer } from "@/hooks/useAnnouncer";
+import { mq } from "@/lib/breakpoints";
 import Header from "@/components/layout/Header";
 import SkipLink from "@/components/layout/SkipLink";
 import Board from "@/components/game/Board";
 import PlayerIndicator from "@/components/game/PlayerIndicator";
+import PlayerPanel from "@/components/game/PlayerPanel";
 import GameStatus from "@/components/game/GameStatus";
 import GameControls from "@/components/game/GameControls";
+import NameEntry from "@/components/game/NameEntry";
 import Confetti from "@/components/game/Confetti";
 import ClientOnly from "@/lib/ClientOnly";
-import { mq } from "@/lib/breakpoints";
+import type { GameMode } from "@/hooks/useGame";
+import type { AiDifficulty } from "@/lib/ai";
 
 const PageWrapper = styled.div`
   position: fixed;
@@ -24,7 +28,8 @@ const PageWrapper = styled.div`
   overflow: hidden;
 `;
 
-const Main = styled.main`
+/* ── Mobile layout ── */
+const MobileMain = styled.main`
   flex: 1;
   min-height: 0;
   display: flex;
@@ -33,20 +38,55 @@ const Main = styled.main`
   justify-content: center;
   gap: clamp(var(--space-2), 1.5vh, var(--space-6));
   padding: clamp(var(--space-2), 1.5vh, var(--space-6)) var(--space-4);
+
+  ${mq.lg} { display: none; }
 `;
 
-const GameArea = styled.div`
+const MobileGameArea = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: clamp(var(--space-2), 1.5vh, var(--space-6));
   width: 100%;
-  max-width: 640px;
+  max-width: 560px;
   min-height: 0;
 `;
 
-// Fixed height so the layout never shifts when win card replaces TurnLabel.
-// Win card: padding 12*2 + content ~28px + border 2px ≈ 54px.
+
+/* ── Desktop layout ── */
+const DesktopMain = styled.main`
+  display: none;
+  ${mq.lg} {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: clamp(200px, 20vw, 300px) 1fr clamp(200px, 20vw, 300px);
+    gap: clamp(var(--space-4), 2vw, var(--space-8));
+    padding: clamp(var(--space-4), 2vh, var(--space-8)) clamp(var(--space-6), 3vw, var(--space-10));
+    align-items: stretch;
+  }
+`;
+
+const PanelSlot = styled.div`
+  display: flex;
+  align-items: stretch;
+`;
+
+const BoardColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(var(--space-3), 2vh, var(--space-6));
+  min-height: 0;
+`;
+
+/* ── Bottom bar — visible on all breakpoints ── */
+const BottomBar = styled.div`
+  display: flex;
+`;
+
+/* ── Shared ── */
 const StatusArea = styled.div`
   height: 54px;
   width: 100%;
@@ -73,6 +113,8 @@ const BoardSection = styled.div`
 `;
 
 const subscribeToNothing = () => () => {};
+const LS_P1 = "forza4_p1";
+const LS_P2 = "forza4_p2";
 
 export default function GamePage() {
   const announce = useAnnouncer();
@@ -82,7 +124,6 @@ export default function GamePage() {
     mode,
     aiDifficulty,
     scores,
-    selectedCol,
     isAiThinking,
     drop,
     reset,
@@ -95,14 +136,22 @@ export default function GamePage() {
   const [droppingCell, setDroppingCell] = useState<{ row: number; col: number } | null>(null);
   const [hoveredCol, setHoveredCol] = useState(3);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [setupDone, setSetupDone] = useState(false);
+  const [playerNames, setPlayerNames] = useState<{ 1: string; 2: string }>({ 1: "P1", 2: "P2" });
+
   const supportsFullscreen = useSyncExternalStore(
     subscribeToNothing,
     () => "requestFullscreen" in document.documentElement,
     () => false,
   );
   const prevStatusRef = useRef(game.status);
-  // Tracks last processed lastMove to avoid re-firing on unrelated re-renders.
   const prevLastMoveRef = useRef(game.lastMove);
+
+  useEffect(() => {
+    const p1 = localStorage.getItem(LS_P1) ?? "";
+    const p2 = localStorage.getItem(LS_P2) ?? "";
+    setPlayerNames({ 1: p1 || "P1", 2: p2 || "P2" });
+  }, []);
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(!!document.fullscreenElement);
@@ -111,15 +160,10 @@ export default function GamePage() {
   }, []);
 
   function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-    } else {
-      document.exitFullscreen();
-    }
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
   }
 
-  // Handles animation + sound for every drop (human and AI) by watching lastMove.
-  // The ref guard prevents spurious re-fires when sound callbacks change reference.
   useEffect(() => {
     if (game.lastMove === prevLastMoveRef.current) return;
     prevLastMoveRef.current = game.lastMove;
@@ -127,34 +171,25 @@ export default function GamePage() {
 
     const { row, col } = game.lastMove;
     const player = game.board[row][col] as Player;
-
     playDrop(player);
-    const playerName =
-      mode === "ai"
-        ? player === 1 ? "You" : "AI"
-        : player === 1 ? "Red" : "Yellow";
-    announce(`${playerName} dropped in column ${col + 1}`);
+    announce(`${playerNames[player]} dropped in column ${col + 1}`);
 
     const tStart = setTimeout(() => setDroppingCell({ row, col }), 0);
     const tEnd = setTimeout(() => setDroppingCell(null), 600);
     return () => { clearTimeout(tStart); clearTimeout(tEnd); };
-  }, [game.lastMove, game.board, playDrop, announce, mode]);
+  }, [game.lastMove, game.board, playDrop, announce, playerNames]);
 
   useEffect(() => {
     if (game.status === prevStatusRef.current) return;
     prevStatusRef.current = game.status;
     if (game.status === "won") {
-      const name =
-        mode === "ai"
-          ? game.winner === 1 ? "You" : "AI"
-          : game.winner === 1 ? "Red" : "Yellow";
-      announce(`${name} wins!`);
+      announce(`${playerNames[game.winner!]} wins!`);
       playWin();
     } else if (game.status === "draw") {
       announce("It's a draw!");
       playDraw();
     }
-  }, [game.status, game.winner, mode, announce, playWin, playDraw]);
+  }, [game.status, game.winner, playerNames, announce, playWin, playDraw]);
 
   function handleColumnClick(col: number) {
     if (game.status !== "playing" || isAiThinking) return;
@@ -168,24 +203,60 @@ export default function GamePage() {
     }
   }
 
-  function handleReset() {
+  function handleSetupConfirm(names: { p1: string; p2: string }, newMode: GameMode, newDifficulty: AiDifficulty) {
+    localStorage.setItem(LS_P1, names.p1);
+    localStorage.setItem(LS_P2, names.p2);
+    setPlayerNames({ 1: names.p1, 2: names.p2 });
+    setMode(newMode);
+    setDifficulty(newDifficulty);
+    setSetupDone(true);
+  }
+
+  function handleChangeSetup() {
+    playReset();
+    reset();
+    setSetupDone(false);
+  }
+
+  function handlePlayAgain() {
     playReset();
     reset();
   }
 
   const isGameOver = game.status === "won" || game.status === "draw";
   const isDraw = game.status === "draw";
-  const gameInProgress = game.status === "playing" && game.lastMove !== null;
 
-  const resultLabel = !isGameOver ? undefined :
-    isDraw ? "Tie!" :
-    mode === "ai" ? (game.winner === 1 ? "You win!" : "AI wins!") :
-    game.winner === 1 ? "Red wins!" : "Yellow wins!";
-
-  function getTurnText(): string {
-    if (mode === "ai") return isAiThinking ? "AI thinking…" : "Your turn";
-    return "";
+  function getTurnLabel(forPlayer: Player): string {
+    if (isGameOver) return "";
+    if (game.currentPlayer !== forPlayer) return "";
+    if (mode === "ai" && forPlayer === 2) return isAiThinking ? "Thinking…" : "";
+    if (mode === "ai" && forPlayer === 1) return isAiThinking ? "" : "Your turn";
+    return "Your turn";
   }
+
+  function getMobileTurnText(): string {
+    if (!setupDone) return "";
+    if (mode === "ai") return isAiThinking ? "CPU thinking…" : `${playerNames[1]}'s turn`;
+    return `${playerNames[game.currentPlayer]}'s turn`;
+  }
+
+  const boardDisabled = isGameOver || isAiThinking || !setupDone;
+
+  const sharedBoard = (
+    <BoardSection>
+      <Board
+        board={game.board}
+        currentPlayer={game.currentPlayer}
+        selectedCol={hoveredCol}
+        winCells={game.winCells}
+        disabled={boardDisabled}
+        droppingCell={droppingCell}
+        onColumnClick={handleColumnClick}
+        onColumnHover={handleColumnHover}
+        onColumnLeave={() => {}}
+      />
+    </BoardSection>
+  );
 
   return (
     <PageWrapper>
@@ -201,51 +272,86 @@ export default function GamePage() {
         <Confetti active={game.status === "won"} />
       </ClientOnly>
 
-      <Main id="main-content">
-        <GameArea>
+      {!setupDone && (
+        <NameEntry
+          initialMode={mode}
+          initialDifficulty={aiDifficulty}
+          initialNames={{ p1: playerNames[1], p2: playerNames[2] }}
+          onConfirm={handleSetupConfirm}
+        />
+      )}
+
+      {/* ── Mobile layout ── */}
+      <MobileMain id="main-content">
+        <MobileGameArea>
           <PlayerIndicator
             currentPlayer={game.currentPlayer}
             winner={game.winner}
             isDraw={isDraw}
             scores={scores}
-            resultLabel={resultLabel}
+            names={playerNames}
+            turnLabels={{ 1: getTurnLabel(1), 2: getTurnLabel(2) }}
           />
-
-          <BoardSection>
-            <Board
-              board={game.board}
-              currentPlayer={game.currentPlayer}
-              selectedCol={hoveredCol}
-              winCells={game.winCells}
-              disabled={isGameOver || isAiThinking}
-              droppingCell={droppingCell}
-              onColumnClick={handleColumnClick}
-              onColumnHover={handleColumnHover}
-              onColumnLeave={() => {}}
-            />
-          </BoardSection>
-
+          {sharedBoard}
           <StatusArea>
             {isGameOver ? (
-              <GameStatus onPlayAgain={handleReset} />
+              <GameStatus onPlayAgain={handlePlayAgain} />
             ) : (
               <TurnLabel $player={game.currentPlayer} aria-live="polite">
-                {getTurnText()}
+                {getMobileTurnText()}
               </TurnLabel>
             )}
           </StatusArea>
+        </MobileGameArea>
+      </MobileMain>
 
-          <GameControls
-            mode={mode}
-            difficulty={aiDifficulty}
-            gameInProgress={gameInProgress}
-            isGameOver={isGameOver}
-            onSetMode={setMode}
-            onSetDifficulty={setDifficulty}
-            onReset={handleReset}
+      {/* ── Desktop layout ── */}
+      <DesktopMain>
+        <PanelSlot>
+          <PlayerPanel
+            player={1}
+            name={playerNames[1]}
+            score={scores[1]}
+            isActive={!isGameOver && game.currentPlayer === 1}
+            isWinner={game.winner === 1}
+            isDraw={isDraw}
+            turnLabel={getTurnLabel(1)}
           />
-        </GameArea>
-      </Main>
+        </PanelSlot>
+
+        <BoardColumn>
+          {sharedBoard}
+          <StatusArea>
+            {isGameOver ? (
+              <GameStatus onPlayAgain={handlePlayAgain} />
+            ) : null}
+          </StatusArea>
+        </BoardColumn>
+
+        <PanelSlot>
+          <PlayerPanel
+            player={2}
+            name={playerNames[2]}
+            score={scores[2]}
+            isActive={!isGameOver && game.currentPlayer === 2}
+            isWinner={game.winner === 2}
+            isDraw={isDraw}
+            turnLabel={getTurnLabel(2)}
+          />
+        </PanelSlot>
+      </DesktopMain>
+
+      {/* ── Desktop bottom bar ── */}
+      <BottomBar>
+        <GameControls
+          mode={mode}
+          difficulty={aiDifficulty}
+          isGameOver={isGameOver}
+          onSetMode={setMode}
+          onSetDifficulty={setDifficulty}
+          onChangeSetup={handleChangeSetup}
+        />
+      </BottomBar>
     </PageWrapper>
   );
 }
