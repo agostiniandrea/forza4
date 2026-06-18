@@ -31,9 +31,11 @@ const Button = styled.button<Props>`
       color: #000;
       border-color: transparent;
       box-shadow: 0 0 20px var(--color-accent-glow);
-      &:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 0 30px var(--color-accent-glow), 0 4px 16px rgba(0, 0, 0, 0.3);
+      @media (hover: hover) {
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 0 30px var(--color-accent-glow), 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
       }
       &:active { transform: translateY(0); }
     `}
@@ -44,10 +46,12 @@ const Button = styled.button<Props>`
       background: transparent;
       color: var(--color-text-muted);
       border-color: var(--color-border);
-      &:hover {
-        color: var(--color-text);
-        border-color: rgba(255, 255, 255, 0.2);
-        background: rgba(255, 255, 255, 0.04);
+      @media (hover: hover) {
+        &:hover {
+          color: var(--color-text);
+          border-color: rgba(255, 255, 255, 0.2);
+          background: rgba(255, 255, 255, 0.04);
+        }
       }
     `}
 
@@ -57,8 +61,10 @@ const Button = styled.button<Props>`
       background: transparent;
       color: var(--color-p1);
       border-color: var(--color-p1);
-      &:hover {
-        background: var(--color-p1-glow-soft);
+      @media (hover: hover) {
+        &:hover {
+          background: var(--color-p1-glow-soft);
+        }
       }
     `}
 

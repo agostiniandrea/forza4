@@ -75,9 +75,11 @@ const SegBtn = styled.button<{ $active: boolean }>`
   background: ${({ $active }) => ($active ? "var(--color-accent)" : "transparent")};
   color: ${({ $active }) => ($active ? "#000" : "var(--color-text-muted)")};
 
-  &:hover {
-    color: ${({ $active }) => ($active ? "#000" : "var(--color-text)")};
-    background: ${({ $active }) => $active ? "var(--color-accent)" : "rgba(255,255,255,0.05)"};
+  @media (hover: hover) {
+    &:hover {
+      color: ${({ $active }) => ($active ? "#000" : "var(--color-text)")};
+      background: ${({ $active }) => $active ? "var(--color-accent)" : "rgba(255,255,255,0.05)"};
+    }
   }
 `;
 

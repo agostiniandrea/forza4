@@ -26,7 +26,7 @@ const Panel = styled.div<{ $player: Player; $active: boolean; $winner: boolean; 
   padding: var(--space-6) var(--space-5);
   border-radius: var(--radius-xl);
   border: 2px solid ${({ $active, $winner }) =>
-    $winner || $active ? "var(--color)" : "rgba(255,255,255,0.1)"};
+    $winner || $active ? "var(--color)" : "var(--glow-soft)"};
   background: linear-gradient(160deg,
     rgba(255,255,255,0.03) 0%,
     var(--color-surface) 50%,
@@ -36,7 +36,7 @@ const Panel = styled.div<{ $player: Player; $active: boolean; $winner: boolean; 
       ? "0 0 16px var(--glow), 0 0 40px var(--glow), 0 0 80px var(--glow-soft), inset 0 0 40px rgba(0,0,0,0.5)"
       : $active
       ? "0 0 10px var(--glow-soft), 0 0 28px var(--glow-soft), inset 0 0 30px rgba(0,0,0,0.5)"
-      : "inset 0 0 20px rgba(0,0,0,0.4), 0 4px 20px rgba(0,0,0,0.3)"};
+      : "0 0 8px var(--glow-soft), inset 0 0 20px rgba(0,0,0,0.4)"};
   transition: border-color var(--transition-normal), box-shadow var(--transition-normal), background var(--transition-normal);
   height: 100%;
   min-height: 320px;

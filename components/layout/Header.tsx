@@ -70,10 +70,12 @@ const IconBtn = styled.button<{ $on?: boolean }>`
   font-size: 16px;
   transition: all var(--transition-fast);
 
-  &:hover {
-    border-color: var(--color-accent);
-    color: var(--color-accent);
-    background: rgba(0, 212, 255, 0.08);
+  @media (hover: hover) {
+    &:hover {
+      border-color: var(--color-accent);
+      color: var(--color-accent);
+      background: rgba(0, 212, 255, 0.08);
+    }
   }
 `;
 
