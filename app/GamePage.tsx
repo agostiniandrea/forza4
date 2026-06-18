@@ -137,7 +137,13 @@ export default function GamePage() {
   const [hoveredCol, setHoveredCol] = useState(3);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [setupDone, setSetupDone] = useState(false);
-  const [playerNames, setPlayerNames] = useState<{ 1: string; 2: string }>({ 1: "P1", 2: "P2" });
+  const [playerNames, setPlayerNames] = useState<{ 1: string; 2: string }>(() => {
+    if (typeof window === "undefined") return { 1: "P1", 2: "P2" };
+    return {
+      1: localStorage.getItem(LS_P1) || "P1",
+      2: localStorage.getItem(LS_P2) || "P2",
+    };
+  });
 
   const supportsFullscreen = useSyncExternalStore(
     subscribeToNothing,
@@ -146,12 +152,6 @@ export default function GamePage() {
   );
   const prevStatusRef = useRef(game.status);
   const prevLastMoveRef = useRef(game.lastMove);
-
-  useEffect(() => {
-    const p1 = localStorage.getItem(LS_P1) ?? "";
-    const p2 = localStorage.getItem(LS_P2) ?? "";
-    setPlayerNames({ 1: p1 || "P1", 2: p2 || "P2" });
-  }, []);
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(!!document.fullscreenElement);
