@@ -70,6 +70,7 @@ const DesktopMain = styled.main`
 const PanelSlot = styled.div`
   display: flex;
   align-items: stretch;
+  overflow: visible;
 `;
 
 const BoardColumn = styled.div`
@@ -316,6 +317,7 @@ export default function GamePage() {
             isWinner={game.winner === 1}
             isDraw={isDraw}
             turnLabel={getTurnLabel(1)}
+            side="left"
           />
         </PanelSlot>
 
@@ -337,6 +339,7 @@ export default function GamePage() {
             isWinner={game.winner === 2}
             isDraw={isDraw}
             turnLabel={getTurnLabel(2)}
+            side="right"
           />
         </PanelSlot>
       </DesktopMain>

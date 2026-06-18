@@ -18,6 +18,23 @@ const BoardWrapper = styled.div`
   user-select: none;
 `;
 
+const BoardDepthWrapper = styled.div`
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -20px;
+    left: 8%;
+    right: 8%;
+    height: 28px;
+    background: radial-gradient(ellipse at center, rgba(20, 80, 255, 0.55) 0%, transparent 70%);
+    filter: blur(10px);
+    z-index: -1;
+    pointer-events: none;
+  }
+`;
+
 const ColumnIndicator = styled.div`
   display: flex;
   gap: var(--cell-gap);
@@ -46,17 +63,17 @@ const DropIndicator = styled.div<{ $visible: boolean; $player: Player }>`
 `;
 
 const BoardFrame = styled.div`
-  background: var(--color-board-frame);
+  background: linear-gradient(180deg, #1a30a0 0%, var(--color-board-frame) 25%, #091650 100%);
   border-radius: var(--board-radius);
   padding: var(--board-padding);
   box-shadow:
-    0 0 0 1px rgba(255,255,255,0.08),
-    0 0 0 3px rgba(0,10,50,0.7),
+    0 0 0 2px rgba(40, 100, 255, 0.65),
+    0 0 24px rgba(20, 80, 255, 0.85),
+    0 0 60px rgba(0, 60, 220, 0.5),
+    0 0 100px rgba(0, 40, 180, 0.25),
     0 12px 60px rgba(0,0,0,0.9),
-    0 4px 20px rgba(0,0,0,0.65),
-    0 0 80px rgba(0,50,200,0.18),
-    inset 0 2px 4px rgba(255,255,255,0.08),
-    inset 0 -2px 6px rgba(0,0,0,0.5);
+    inset 0 2px 5px rgba(255,255,255,0.1),
+    inset 0 -3px 8px rgba(0,0,0,0.6);
 `;
 
 const Grid = styled.div`
@@ -75,7 +92,7 @@ const Cell = styled.div<{ $hovering: boolean; $hasWinPiece: boolean; $dropping: 
   width: var(--cell-size);
   height: var(--cell-size);
   border-radius: 50%;
-  background: radial-gradient(circle at 50% 60%, #060c20 0%, var(--color-cell-empty) 70%);
+  background: radial-gradient(circle at 50% 55%, #020408 0%, #070e26 75%);
   border: 1px solid rgba(0,0,0,0.55);
   display: flex;
   align-items: center;
@@ -83,11 +100,11 @@ const Cell = styled.div<{ $hovering: boolean; $hasWinPiece: boolean; $dropping: 
   position: relative;
   transition: background var(--transition-fast), box-shadow var(--transition-fast);
   box-shadow:
-    inset 0 5px 12px rgba(0,0,0,0.85),
-    inset 0 2px 5px rgba(0,0,0,0.6),
-    inset 2px 0 4px rgba(0,0,0,0.25),
-    inset -2px 0 4px rgba(0,0,0,0.25),
-    inset 0 -1px 3px rgba(255,255,255,0.03);
+    inset 0 6px 16px rgba(0,0,0,0.95),
+    inset 0 2px 6px rgba(0,0,0,0.7),
+    inset 3px 0 5px rgba(0,0,0,0.3),
+    inset -3px 0 5px rgba(0,0,0,0.3),
+    inset 0 -1px 3px rgba(80,120,255,0.05);
 
   ${({ $dropping }) =>
     $dropping && css`
@@ -177,6 +194,7 @@ export default function Board({
         ))}
       </ColumnIndicator>
 
+      <BoardDepthWrapper>
       <BoardFrame>
         <Grid
           ref={boardRef}
@@ -226,6 +244,7 @@ export default function Board({
           )}
         </Grid>
       </BoardFrame>
+      </BoardDepthWrapper>
 
       <p id="keyboard-hint" className="sr-only">
         Use arrow keys to choose column, Enter to drop

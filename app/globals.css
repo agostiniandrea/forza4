@@ -13,8 +13,8 @@
 
   /* Board */
   --color-board:        #0A1535;
-  --color-board-frame:  #0E1D47;
-  --color-cell-empty:   #0D1B3E;
+  --color-board-frame:  #0D2060;
+  --color-cell-empty:   #040c20;
   --color-cell-ring:    rgba(255, 255, 255, 0.06);
 
   /* Player 1 — Red */
