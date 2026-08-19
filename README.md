@@ -56,7 +56,7 @@ app/
   layout.tsx      # root layout — fonts, StyledComponentsRegistry, Analytics
 
 components/
-  game/           # Board, Piece, GameStatus, GameControls, PlayerIndicator, Confetti
+  game/           # Board, Piece, GameOverModal, NameEntry, PlayerPanel, PlayerIndicator, Confetti
   layout/         # Header, SkipLink
   ui/             # Button
 
