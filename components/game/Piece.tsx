@@ -25,36 +25,74 @@ interface PieceProps {
   $winning?: boolean;
 }
 
+// All shading is expressed as a fraction of --cell-size rather than in fixed
+// pixels. The board scales from 36px cells on a phone to 92px on a large
+// desktop, and absolute blurs that read as plastic at 92px turn to mud at 36px.
+const shade = (k: number) => `calc(var(--cell-size) * ${k})`;
+
+const body = (p: Player) => {
+  const [hot, base, dark, deep] =
+    p === 1
+      ? ["#ff8585", "var(--color-p1)", "var(--color-p1-dark)", "#770000"]
+      : ["#ffe87c", "var(--color-p2)", "var(--color-p2-dark)", "#7a5500"];
+  return css`
+    background:
+      /* specular highlight */
+      radial-gradient(circle at 32% 26%, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.14) 28%, rgba(255,255,255,0) 46%),
+      /* bounce light off the well floor, opposite the key light */
+      radial-gradient(circle at 72% 79%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 36%),
+      /* sphere body */
+      radial-gradient(circle at 38% 33%, ${hot} 0%, ${base} 38%, ${dark} 70%, ${deep} 100%);
+    box-shadow:
+      /* contact shadow: seats the disc inside the well instead of on top of it */
+      0 ${shade(0.05)} ${shade(0.1)} rgba(0,0,0,0.85),
+      0 ${shade(0.02)} ${shade(0.04)} rgba(0,0,0,0.55),
+      /* terminator */
+      inset 0 ${shade(-0.06)} ${shade(0.15)} rgba(0,0,0,0.5),
+      /* light wrapping over the top edge */
+      inset 0 ${shade(0.035)} ${shade(0.1)} rgba(255,255,255,0.45),
+      /* rim keeps the silhouette crisp against a near-black hole */
+      inset 0 0 0 1px rgba(0,0,0,0.28);
+    color: ${p === 1 ? "var(--color-p1)" : "var(--color-p2)"};
+  `;
+};
+
+// Shape, not just hue. Red and yellow converge under protanopia and in
+// greyscale, so each player carries a distinct engraved mark: P1 a ring,
+// P2 a filled core. Previously both wore the same faint ring, which told
+// a colourblind player nothing while still flattening the sphere.
+const mark = (p: Player) => css`
+  &::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    ${p === 1
+      ? css`
+          inset: 26%;
+          border: ${shade(0.035)} solid rgba(0, 0, 0, 0.22);
+          box-shadow:
+            inset 0 ${shade(0.012)} ${shade(0.02)} rgba(0, 0, 0, 0.3),
+            0 ${shade(0.012)} ${shade(0.02)} rgba(255, 255, 255, 0.16);
+        `
+      : css`
+          inset: 36%;
+          background: rgba(0, 0, 0, 0.2);
+          box-shadow:
+            inset 0 ${shade(0.015)} ${shade(0.025)} rgba(0, 0, 0, 0.32),
+            0 ${shade(0.012)} ${shade(0.02)} rgba(255, 255, 255, 0.18);
+        `}
+  }
+`;
+
 const PieceEl = styled.div<PieceProps>`
   width: 100%;
   height: 100%;
   border-radius: 50%;
   position: relative;
 
-  ${({ $player }) =>
-    $player === 1
-      ? css`
-          background:
-            radial-gradient(circle at 30% 26%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 42%),
-            radial-gradient(circle at 38% 33%, #ff8585 0%, var(--color-p1) 38%, var(--color-p1-dark) 70%, #770000 100%);
-          box-shadow:
-            0 5px 16px rgba(0,0,0,0.8),
-            0 2px 6px rgba(0,0,0,0.5),
-            inset 0 -3px 9px rgba(0,0,0,0.45),
-            inset 0 2px 6px rgba(255,255,255,0.5);
-          color: var(--color-p1);
-        `
-      : css`
-          background:
-            radial-gradient(circle at 30% 26%, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 42%),
-            radial-gradient(circle at 38% 33%, #ffe87c 0%, var(--color-p2) 38%, var(--color-p2-dark) 70%, #7a5500 100%);
-          box-shadow:
-            0 5px 16px rgba(0,0,0,0.8),
-            0 2px 6px rgba(0,0,0,0.5),
-            inset 0 -3px 9px rgba(0,0,0,0.4),
-            inset 0 2px 6px rgba(255,255,255,0.55);
-          color: var(--color-p2);
-        `}
+  ${({ $player }) => body($player)}
+  ${({ $player }) => mark($player)}
 
   ${({ $dropping, $row = 0 }) => {
     const rows = Math.max(0.5, $row);
@@ -70,16 +108,6 @@ const PieceEl = styled.div<PieceProps>`
       animation: ${winAnim} 0.9s ease-in-out infinite;
       z-index: 2;
     `}
-
-  /* Colorblind pattern */
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 22%;
-    border-radius: 50%;
-    border: 2px solid rgba(0, 0, 0, 0.15);
-    pointer-events: none;
-  }
 `;
 
 interface Props {

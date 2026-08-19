@@ -63,17 +63,38 @@ const DropIndicator = styled.div<{ $visible: boolean; $player: Player }>`
 `;
 
 const BoardFrame = styled.div`
-  background: linear-gradient(180deg, #1a30a0 0%, var(--color-board-frame) 25%, #091650 100%);
+  position: relative;
+  background:
+    /* sheen along the top face of the moulding */
+    linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 12%),
+    linear-gradient(180deg, #1d34ab 0%, var(--color-board-frame) 26%, #081348 100%);
   border-radius: var(--board-radius);
   padding: var(--board-padding);
   box-shadow:
+    /* neon bloom */
     0 0 0 2px rgba(40, 100, 255, 0.65),
     0 0 24px rgba(20, 80, 255, 0.85),
     0 0 60px rgba(0, 60, 220, 0.5),
     0 0 100px rgba(0, 40, 180, 0.25),
     0 12px 60px rgba(0,0,0,0.9),
-    inset 0 2px 5px rgba(255,255,255,0.1),
-    inset 0 -3px 8px rgba(0,0,0,0.6);
+    /* bevel: a lit top lip and a shaded bottom lip give the slab thickness,
+       which a single soft inset could not do on its own */
+    inset 0 2px 1px rgba(255,255,255,0.3),
+    inset 0 -2px 1px rgba(0,0,0,0.6),
+    inset 0 7px 16px rgba(255,255,255,0.06),
+    inset 0 -11px 22px rgba(0,0,0,0.55);
+
+  /* the wells are punched into a plate recessed below the moulding */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: calc(var(--board-padding) * 0.4);
+    border-radius: calc(var(--board-radius) * 0.7);
+    box-shadow:
+      inset 0 2px 7px rgba(0,0,0,0.5),
+      inset 0 -1px 0 rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
 `;
 
 const Grid = styled.div`
