@@ -63,8 +63,12 @@
   --space-12: 48px;
   --space-16: 64px;
 
-  /* Board sizing — fluid, scales with both width and height */
-  --cell-size:         clamp(36px, min(9vw, 9vh), 92px);
+  /* Board sizing — fluid, scales with both width and height.
+     The width term is what binds on a phone: 7 cells + 6 gaps + 2 paddings
+     have to fit the viewport, which puts the ceiling near 11.5vw. The old 9vw
+     never reached the 36px floor on a 390px screen, so the board sat in the
+     middle of the page with dead space either side. */
+  --cell-size:         clamp(36px, min(11.5vw, 8vh), 92px);
   --cell-gap:          clamp(3px, min(0.8vw, 0.8vh), 9px);
   --board-padding:     clamp(8px, min(2vw, 2vh), 22px);
   --board-radius:      clamp(12px, 2vw, 22px);
@@ -82,10 +86,14 @@
   --transition-slow:   400ms ease;
 }
 
-/* On desktop, shrink cells so wider player panels don't cause overflow */
+/* On desktop the board shares the row with two player panels, so the width
+   term has to clear 2 x clamp(220px, 22vw, 340px) plus grid gaps and page
+   padding. 5.4vw is what is left at 1024px, the narrowest this layout runs.
+   The height term rose with it now that the settings bar no longer sits under
+   the board during play. */
 @media (min-width: 1024px) {
   :root {
-    --cell-size: clamp(36px, min(4.5vw, 7.5vh), 80px);
+    --cell-size: clamp(40px, min(5.4vw, 9.6vh), 104px);
   }
 }
 

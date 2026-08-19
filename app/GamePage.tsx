@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import type { Player } from "@/lib/game-engine";
 import { useGame } from "@/hooks/useGame";
 import { useSound } from "@/hooks/useSound";
@@ -19,6 +19,11 @@ import Confetti from "@/components/game/Confetti";
 import ClientOnly from "@/lib/ClientOnly";
 import type { GameMode } from "@/hooks/useGame";
 import type { AiDifficulty } from "@/lib/ai";
+
+const settingsIn = keyframes`
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
 
 const PageWrapper = styled.div`
   position: fixed;
@@ -82,9 +87,20 @@ const BoardColumn = styled.div`
   min-height: 0;
 `;
 
-/* ── Bottom bar — visible on all breakpoints ── */
-const BottomBar = styled.div`
-  display: flex;
+/* ── Settings bar — only between games, never during one ── */
+const SettingsBar = styled.div`
+  /* Desktop only. On a phone this bar is ~430px of stacked controls, which
+     clipped the Play again button against the fixed viewport — and it only
+     duplicates the setup screen, which already carries mode and difficulty.
+     Mobile reaches those through the header instead. */
+  display: none;
+
+  ${mq.lg} {
+    /* block, not flex: as a flex child the bar shrank to its content and
+       parked itself on the left edge instead of spanning the viewport */
+    display: block;
+    animation: ${settingsIn} var(--transition-normal) ease-out;
+  }
 `;
 
 /* ── Shared ── */
@@ -176,7 +192,7 @@ export default function GamePage() {
     announce(`${playerNames[player]} dropped in column ${col + 1}`);
 
     const tStart = setTimeout(() => setDroppingCell({ row, col }), 0);
-    const tEnd = setTimeout(() => setDroppingCell(null), 600);
+    const tEnd = setTimeout(() => setDroppingCell(null), 500);
     return () => { clearTimeout(tStart); clearTimeout(tEnd); };
   }, [game.lastMove, game.board, playDrop, announce, playerNames]);
 
@@ -267,6 +283,7 @@ export default function GamePage() {
         onToggleSound={toggleSound}
         isFullscreen={isFullscreen}
         onToggleFullscreen={supportsFullscreen ? toggleFullscreen : undefined}
+        onNewGame={setupDone ? handleChangeSetup : undefined}
       />
 
       <ClientOnly>
@@ -344,17 +361,19 @@ export default function GamePage() {
         </PanelSlot>
       </DesktopMain>
 
-      {/* ── Desktop bottom bar ── */}
-      <BottomBar>
-        <GameControls
-          mode={mode}
-          difficulty={aiDifficulty}
-          isGameOver={isGameOver}
-          onSetMode={setMode}
-          onSetDifficulty={setDifficulty}
-          onChangeSetup={handleChangeSetup}
-        />
-      </BottomBar>
+      {/* ── Settings: between games only. During play the board gets the room,
+             and the header keeps an escape hatch. ── */}
+      {setupDone && isGameOver && (
+        <SettingsBar>
+          <GameControls
+            mode={mode}
+            difficulty={aiDifficulty}
+            onSetMode={setMode}
+            onSetDifficulty={setDifficulty}
+            onChangeSetup={handleChangeSetup}
+          />
+        </SettingsBar>
+      )}
     </PageWrapper>
   );
 }

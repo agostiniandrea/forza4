@@ -84,9 +84,12 @@ interface Props {
   onToggleSound: () => void;
   isFullscreen?: boolean;
   onToggleFullscreen?: () => void;
+  /* Present only mid-game: the settings bar is hidden then, so this is the
+     way back out to setup. */
+  onNewGame?: () => void;
 }
 
-export default function Header({ soundEnabled, onToggleSound, isFullscreen, onToggleFullscreen }: Props) {
+export default function Header({ soundEnabled, onToggleSound, isFullscreen, onToggleFullscreen, onNewGame }: Props) {
   return (
     <Nav>
       <Logo aria-label="Forza 4">
@@ -99,6 +102,13 @@ export default function Header({ soundEnabled, onToggleSound, isFullscreen, onTo
         <LogoText>FORZA 4</LogoText>
       </Logo>
       <Controls>
+        {onNewGame && (
+          <IconBtn onClick={onNewGame} aria-label="New game" title="New game">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M14 8a6 6 0 1 1-1.76-4.24M14 2v4h-4" />
+            </svg>
+          </IconBtn>
+        )}
         <IconBtn
           $on={soundEnabled}
           onClick={onToggleSound}

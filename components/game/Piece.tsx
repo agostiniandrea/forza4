@@ -98,7 +98,7 @@ const PieceEl = styled.div<PieceProps>`
     const rows = Math.max(0.5, $row);
     return $dropping && css`
       --drop-start: calc(-1 * ${rows} * (var(--cell-size) + var(--cell-gap)));
-      animation: ${dropAnim} calc(0.4s + ${$row} * 0.07s) cubic-bezier(0.15, 1.0, 0.4, 1) forwards;
+      animation: ${dropAnim} calc(0.26s + ${$row} * 0.045s) cubic-bezier(0.15, 1.0, 0.4, 1) forwards;
     `;
   }}
 

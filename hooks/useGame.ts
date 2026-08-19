@@ -93,7 +93,10 @@ export function useGame() {
           }
           const aiCol = getBestMove(testGame.board, difficulty);
           dispatch({ type: "AI_DROP", col: aiCol });
-        }, 600);
+          /* 600ms read as sluggish: it stacked on top of the player's drop
+             animation and the AI's own, pushing a round trip past two seconds.
+             280ms still lands as a deliberate beat rather than an instant reply. */
+        }, 280);
       }
     },
     [state, dispatch]

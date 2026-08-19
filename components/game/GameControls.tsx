@@ -90,13 +90,12 @@ const CenterAction = styled.div`
 interface Props {
   mode: GameMode;
   difficulty: AiDifficulty;
-  isGameOver: boolean;
   onSetMode: (mode: GameMode) => void;
   onSetDifficulty: (d: AiDifficulty) => void;
   onChangeSetup: () => void;
 }
 
-export default function GameControls({ mode, difficulty, isGameOver, onSetMode, onSetDifficulty, onChangeSetup }: Props) {
+export default function GameControls({ mode, difficulty, onSetMode, onSetDifficulty, onChangeSetup }: Props) {
   return (
     <Bar>
       <ControlGroup>
@@ -112,8 +111,8 @@ export default function GameControls({ mode, difficulty, isGameOver, onSetMode, 
       </ControlGroup>
 
       <CenterAction>
-        <Button $variant="primary" onClick={onChangeSetup} style={{ width: "100%" }}>
-          {isGameOver ? "Play again" : "↺ New game"}
+        <Button $variant="ghost" onClick={onChangeSetup} style={{ width: "100%" }}>
+          ↺ Change players
         </Button>
       </CenterAction>
 
