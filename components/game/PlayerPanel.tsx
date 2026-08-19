@@ -13,7 +13,7 @@ const winPulse = keyframes`
   50%       { box-shadow: 0 0 50px var(--glow), 0 0 100px var(--glow); }
 `;
 
-const Panel = styled.div<{ $player: Player; $active: boolean; $winner: boolean }>`
+const Panel = styled.div<{ $player: Player; $active: boolean; $winner: boolean; $side?: "left" | "right" }>`
   --color: ${({ $player }) => $player === 1 ? "var(--color-p1)" : "var(--color-p2)"};
   --glow: ${({ $player }) => $player === 1 ? "var(--color-p1-glow)" : "var(--color-p2-glow)"};
   --glow-soft: ${({ $player }) => $player === 1 ? "var(--color-p1-glow-soft)" : "var(--color-p2-glow-soft)"};
@@ -25,21 +25,26 @@ const Panel = styled.div<{ $player: Player; $active: boolean; $winner: boolean }
   gap: var(--space-5);
   padding: var(--space-6) var(--space-5);
   border-radius: var(--radius-xl);
-  border: 1px solid ${({ $active, $winner }) =>
-    $winner || $active ? "var(--color)" : "rgba(255,255,255,0.08)"};
-  background: ${({ $winner, $active }) =>
-    $winner || $active
-      ? "linear-gradient(160deg, rgba(255,255,255,0.04) 0%, transparent 100%)"
-      : "var(--color-surface)"};
+  border: 2px solid ${({ $active, $winner }) =>
+    $winner || $active ? "var(--color)" : "var(--glow-soft)"};
+  background: linear-gradient(160deg,
+    rgba(255,255,255,0.03) 0%,
+    var(--color-surface) 50%,
+    rgba(0,0,0,0.35) 100%);
   box-shadow: ${({ $active, $winner }) =>
     $winner
-      ? "0 0 40px var(--glow), 0 0 80px var(--glow-soft), inset 0 0 30px rgba(255,255,255,0.03)"
+      ? "0 0 16px var(--glow), 0 0 40px var(--glow), 0 0 80px var(--glow-soft), inset 0 0 40px rgba(0,0,0,0.5)"
       : $active
-      ? "0 0 20px var(--glow-soft), inset 0 0 20px rgba(255,255,255,0.02)"
-      : "none"};
+      ? "0 0 10px var(--glow-soft), 0 0 28px var(--glow-soft), inset 0 0 30px rgba(0,0,0,0.5)"
+      : "0 0 8px var(--glow-soft), inset 0 0 20px rgba(0,0,0,0.4)"};
   transition: border-color var(--transition-normal), box-shadow var(--transition-normal), background var(--transition-normal);
   height: 100%;
   min-height: 320px;
+  transform: ${({ $side }) =>
+    $side === "left" ? "perspective(1000px) rotateY(8deg)"
+    : $side === "right" ? "perspective(1000px) rotateY(-8deg)"
+    : "none"};
+  transform-origin: center center;
 
   ${({ $winner }) => $winner && css`
     animation: ${winPulse} 2s ease-in-out infinite;
@@ -78,14 +83,24 @@ const BigDisc = styled.div<{ $player: Player; $active: boolean; $winner: boolean
   border-radius: 50%;
   background: ${({ $player }) =>
     $player === 1
-      ? "radial-gradient(circle at 32% 28%, var(--color-p1-light), var(--color-p1), var(--color-p1-dark))"
-      : "radial-gradient(circle at 32% 28%, var(--color-p2-light), var(--color-p2), var(--color-p2-dark))"};
+      ? `radial-gradient(circle at 30% 25%, rgba(255,255,255,0.55) 0%, transparent 40%),
+         radial-gradient(circle at 35% 30%, #ff8585 0%, var(--color-p1) 38%, var(--color-p1-dark) 70%, #770000 100%)`
+      : `radial-gradient(circle at 30% 25%, rgba(255,255,255,0.6) 0%, transparent 40%),
+         radial-gradient(circle at 35% 30%, #ffe87c 0%, var(--color-p2) 38%, var(--color-p2-dark) 70%, #7a5500 100%)`};
   box-shadow: ${({ $player, $active, $winner }) =>
     $winner
-      ? `0 0 40px ${$player === 1 ? "var(--color-p1-glow)" : "var(--color-p2-glow)"}, 0 6px 24px rgba(0,0,0,0.5)`
+      ? `0 0 50px ${$player === 1 ? "var(--color-p1-glow)" : "var(--color-p2-glow)"},
+         0 8px 30px rgba(0,0,0,0.7),
+         inset 0 -4px 12px rgba(0,0,0,0.45),
+         inset 0 3px 8px rgba(255,255,255,0.5)`
       : $active
-      ? `0 0 20px ${$player === 1 ? "var(--color-p1-glow-soft)" : "var(--color-p2-glow-soft)"}, 0 4px 16px rgba(0,0,0,0.4)`
-      : "0 4px 16px rgba(0,0,0,0.4)"};
+      ? `0 0 28px ${$player === 1 ? "var(--color-p1-glow-soft)" : "var(--color-p2-glow-soft)"},
+         0 6px 22px rgba(0,0,0,0.6),
+         inset 0 -4px 12px rgba(0,0,0,0.4),
+         inset 0 3px 8px rgba(255,255,255,0.45)`
+      : `0 6px 20px rgba(0,0,0,0.6),
+         inset 0 -4px 12px rgba(0,0,0,0.4),
+         inset 0 3px 8px rgba(255,255,255,0.38)`};
   animation: ${({ $active, $winner }) => ($active && !$winner) ? css`${pulse} 1.4s ease-in-out infinite` : "none"};
   transition: box-shadow var(--transition-normal);
 `;
@@ -156,13 +171,14 @@ interface Props {
   isWinner: boolean;
   isDraw: boolean;
   turnLabel: string;
+  side?: "left" | "right";
 }
 
-export default function PlayerPanel({ player, name, score, isActive, isWinner, isDraw, turnLabel }: Props) {
+export default function PlayerPanel({ player, name, score, isActive, isWinner, isDraw, turnLabel, side }: Props) {
   const isGameOver = isWinner || isDraw;
 
   return (
-    <Panel $player={player} $active={isActive} $winner={isWinner}>
+    <Panel $player={player} $active={isActive} $winner={isWinner} $side={side}>
       <Stars>
         <Star $player={player} $lit={isWinner}>★</Star>
         <Name $player={player}>{name}</Name>

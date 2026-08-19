@@ -24,23 +24,23 @@ const PlayerCard = styled.div<{ $player: Player; $active: boolean; $winner: bool
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
-  border: 1px solid
+  border: 2px solid
     ${({ $player, $active, $winner }) =>
       $winner
         ? $player === 1 ? "var(--color-p1)" : "var(--color-p2)"
         : $active
-        ? $player === 1 ? "rgba(255, 59, 59, 0.5)" : "rgba(255, 215, 0, 0.5)"
-        : "var(--color-border)"};
-  background: ${({ $player, $active, $winner }) =>
-    $winner
-      ? $player === 1 ? "var(--color-p1-glow-soft)" : "var(--color-p2-glow-soft)"
-      : $active
-      ? $player === 1 ? "rgba(255, 59, 59, 0.08)" : "rgba(255, 215, 0, 0.08)"
-      : "var(--color-surface)"};
+        ? $player === 1 ? "rgba(255, 59, 59, 0.7)" : "rgba(255, 215, 0, 0.7)"
+        : "rgba(255,255,255,0.1)"};
+  background: linear-gradient(160deg,
+    rgba(255,255,255,0.03) 0%,
+    var(--color-surface) 60%,
+    rgba(0,0,0,0.3) 100%);
   box-shadow: ${({ $active, $winner, $player }) =>
-    ($winner || $active)
-      ? `0 0 20px ${$player === 1 ? "var(--color-p1-glow-soft)" : "var(--color-p2-glow-soft)"}`
-      : "none"};
+    $winner
+      ? `0 0 14px ${$player === 1 ? "var(--color-p1-glow)" : "var(--color-p2-glow)"}, 0 0 40px ${$player === 1 ? "var(--color-p1-glow-soft)" : "var(--color-p2-glow-soft)"}`
+      : $active
+      ? `0 0 10px ${$player === 1 ? "var(--color-p1-glow-soft)" : "var(--color-p2-glow-soft)"}, 0 0 24px ${$player === 1 ? "var(--color-p1-glow-soft)" : "var(--color-p2-glow-soft)"}`
+      : "inset 0 0 16px rgba(0,0,0,0.4)"};
   transition: border-color var(--transition-normal), background var(--transition-normal), box-shadow var(--transition-normal);
   min-height: 110px;
 `;

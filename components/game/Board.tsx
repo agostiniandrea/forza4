@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useEffect } from "react";
+import { memo, useRef, useCallback, useEffect } from "react";
 import styled, { css, keyframes } from "styled-components";
 import type { Board as BoardType, Player } from "@/lib/game-engine";
 import { ROWS, COLS, getDropRow, isColumnFull } from "@/lib/game-engine";
@@ -18,6 +18,23 @@ const BoardWrapper = styled.div`
   user-select: none;
 `;
 
+const BoardDepthWrapper = styled.div`
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -20px;
+    left: 8%;
+    right: 8%;
+    height: 28px;
+    background: radial-gradient(ellipse at center, rgba(20, 80, 255, 0.55) 0%, transparent 70%);
+    filter: blur(10px);
+    z-index: -1;
+    pointer-events: none;
+  }
+`;
+
 const ColumnIndicator = styled.div`
   display: flex;
   gap: var(--cell-gap);
@@ -25,7 +42,9 @@ const ColumnIndicator = styled.div`
   margin-bottom: var(--space-2);
   height: 32px;
 
-  @media (hover: none) { visibility: hidden; }
+  /* No pointer, no pointer affordance. display:none rather than
+     visibility:hidden so it stops reserving the row and stops animating. */
+  @media (hover: none) { display: none; }
 `;
 
 const DropIndicator = styled.div<{ $visible: boolean; $player: Player }>`
@@ -46,14 +65,38 @@ const DropIndicator = styled.div<{ $visible: boolean; $player: Player }>`
 `;
 
 const BoardFrame = styled.div`
-  background: var(--color-board-frame);
+  position: relative;
+  background:
+    /* sheen along the top face of the moulding */
+    linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 12%),
+    linear-gradient(180deg, #1d34ab 0%, var(--color-board-frame) 26%, #081348 100%);
   border-radius: var(--board-radius);
   padding: var(--board-padding);
   box-shadow:
-    0 0 0 1px var(--color-border),
-    0 8px 48px rgba(0, 0, 0, 0.7),
-    0 0 60px rgba(0, 50, 180, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    /* neon bloom */
+    0 0 0 2px rgba(40, 100, 255, 0.65),
+    0 0 24px rgba(20, 80, 255, 0.85),
+    0 0 60px rgba(0, 60, 220, 0.5),
+    0 0 100px rgba(0, 40, 180, 0.25),
+    0 12px 60px rgba(0,0,0,0.9),
+    /* bevel: a lit top lip and a shaded bottom lip give the slab thickness,
+       which a single soft inset could not do on its own */
+    inset 0 2px 1px rgba(255,255,255,0.3),
+    inset 0 -2px 1px rgba(0,0,0,0.6),
+    inset 0 7px 16px rgba(255,255,255,0.06),
+    inset 0 -11px 22px rgba(0,0,0,0.55);
+
+  /* the wells are punched into a plate recessed below the moulding */
+  &::before {
+    content: "";
+    position: absolute;
+    inset: calc(var(--board-padding) * 0.4);
+    border-radius: calc(var(--board-radius) * 0.7);
+    box-shadow:
+      inset 0 2px 7px rgba(0,0,0,0.5),
+      inset 0 -1px 0 rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
 `;
 
 const Grid = styled.div`
@@ -72,13 +115,19 @@ const Cell = styled.div<{ $hovering: boolean; $hasWinPiece: boolean; $dropping: 
   width: var(--cell-size);
   height: var(--cell-size);
   border-radius: 50%;
-  background: var(--color-cell-empty);
-  border: 1px solid var(--color-cell-ring);
+  background: radial-gradient(circle at 50% 55%, #020408 0%, #070e26 75%);
+  border: 1px solid rgba(0,0,0,0.55);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   transition: background var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow:
+    inset 0 6px 16px rgba(0,0,0,0.95),
+    inset 0 2px 6px rgba(0,0,0,0.7),
+    inset 3px 0 5px rgba(0,0,0,0.3),
+    inset -3px 0 5px rgba(0,0,0,0.3),
+    inset 0 -1px 3px rgba(80,120,255,0.05);
 
   ${({ $dropping }) =>
     $dropping && css`
@@ -87,15 +136,66 @@ const Cell = styled.div<{ $hovering: boolean; $hasWinPiece: boolean; $dropping: 
 
   ${({ $hovering }) =>
     $hovering && css`
-      background: rgba(255, 255, 255, 0.04);
-      box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.06);
+      @media (hover: hover) {
+        background: radial-gradient(circle at 50% 60%, #0d1830 0%, rgba(255,255,255,0.05) 70%);
+        box-shadow:
+          inset 0 5px 12px rgba(0,0,0,0.75),
+          inset 0 2px 5px rgba(0,0,0,0.5),
+          inset 0 0 14px rgba(255,255,255,0.06);
+      }
     `}
 
   ${({ $hasWinPiece }) =>
     $hasWinPiece && css`
-      background: rgba(255, 215, 0, 0.04);
+      background: radial-gradient(circle at 50% 60%, #0a0c10 0%, rgba(255,215,0,0.06) 70%);
     `}
 `;
+
+interface BoardCellProps {
+  row: number;
+  col: number;
+  cell: Player | null;
+  hovering: boolean;
+  winning: boolean;
+  dropping: boolean;
+  disabled: boolean;
+  onClick: (col: number) => void;
+  onHover: (col: number) => void;
+}
+
+/* Every prop is a primitive or a stable callback, so moving the pointer between
+   two columns re-renders those two and leaves the other thirty cells alone.
+   Without this each hover re-ran all forty-two through styled-components. */
+const BoardCell = memo(function BoardCell({
+  row, col, cell, hovering, winning, dropping, disabled, onClick, onHover,
+}: BoardCellProps) {
+  let ariaLabel: string;
+  if (!cell) ariaLabel = "Empty";
+  else if (winning) ariaLabel = cell === 1 ? "Red disc — winning piece" : "Yellow disc — winning piece";
+  else ariaLabel = cell === 1 ? "Red disc" : "Yellow disc";
+
+  return (
+    <Cell
+      role="gridcell"
+      aria-label={ariaLabel}
+      $hovering={hovering}
+      $hasWinPiece={winning}
+      $dropping={dropping}
+      onClick={() => !disabled && onClick(col)}
+      onMouseEnter={() => !disabled && onHover(col)}
+      style={{ cursor: disabled || cell ? "default" : "pointer" }}
+    >
+      {cell && (
+        <Piece
+          player={cell}
+          dropping={dropping}
+          droppingRow={dropping ? row : undefined}
+          winning={winning}
+        />
+      )}
+    </Cell>
+  );
+});
 
 interface Props {
   board: BoardType;
@@ -165,6 +265,7 @@ export default function Board({
         ))}
       </ColumnIndicator>
 
+      <BoardDepthWrapper>
       <BoardFrame>
         <Grid
           ref={boardRef}
@@ -176,44 +277,24 @@ export default function Board({
           onBlur={onColumnLeave}
         >
           {Array.from({ length: ROWS }, (_, row) =>
-            Array.from({ length: COLS }, (_, col) => {
-              const cell = board[row][col];
-              const isWin = winSet.has(`${row}-${col}`);
-              const isDropping = droppingCell?.row === row && droppingCell?.col === col;
-              const isHovered = !disabled && col === hoveredCol && !cell;
-
-              let ariaLabel: string;
-              if (!cell) ariaLabel = "Empty";
-              else if (isWin) ariaLabel = cell === 1 ? "Red disc — winning piece" : "Yellow disc — winning piece";
-              else ariaLabel = cell === 1 ? "Red disc" : "Yellow disc";
-
-              return (
-                <Cell
-                  key={`${row}-${col}`}
-                  role="gridcell"
-                  aria-label={ariaLabel}
-                  $hovering={isHovered}
-                  $hasWinPiece={isWin}
-                  $dropping={isDropping}
-                  onClick={() => !disabled && onColumnClick(col)}
-                  onMouseEnter={() => !disabled && onColumnHover(col)}
-                  onMouseLeave={onColumnLeave}
-                  style={{ cursor: disabled || cell ? "default" : "pointer" }}
-                >
-                  {cell && (
-                    <Piece
-                      player={cell}
-                      dropping={isDropping}
-                      droppingRow={isDropping ? row : undefined}
-                      winning={isWin}
-                    />
-                  )}
-                </Cell>
-              );
-            })
+            Array.from({ length: COLS }, (_, col) => (
+              <BoardCell
+                key={`${row}-${col}`}
+                row={row}
+                col={col}
+                cell={board[row][col]}
+                hovering={!disabled && col === hoveredCol && !board[row][col]}
+                winning={winSet.has(`${row}-${col}`)}
+                dropping={droppingCell?.row === row && droppingCell?.col === col}
+                disabled={disabled}
+                onClick={onColumnClick}
+                onHover={onColumnHover}
+              />
+            ))
           )}
         </Grid>
       </BoardFrame>
+      </BoardDepthWrapper>
 
       <p id="keyboard-hint" className="sr-only">
         Use arrow keys to choose column, Enter to drop

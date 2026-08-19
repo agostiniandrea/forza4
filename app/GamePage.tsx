@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import styled from "styled-components";
 import type { Player } from "@/lib/game-engine";
 import { useGame } from "@/hooks/useGame";
@@ -12,8 +12,7 @@ import SkipLink from "@/components/layout/SkipLink";
 import Board from "@/components/game/Board";
 import PlayerIndicator from "@/components/game/PlayerIndicator";
 import PlayerPanel from "@/components/game/PlayerPanel";
-import GameStatus from "@/components/game/GameStatus";
-import GameControls from "@/components/game/GameControls";
+import GameOverModal from "@/components/game/GameOverModal";
 import NameEntry from "@/components/game/NameEntry";
 import Confetti from "@/components/game/Confetti";
 import ClientOnly from "@/lib/ClientOnly";
@@ -60,9 +59,13 @@ const DesktopMain = styled.main`
     flex: 1;
     min-height: 0;
     display: grid;
-    grid-template-columns: clamp(200px, 20vw, 300px) 1fr clamp(200px, 20vw, 300px);
-    gap: clamp(var(--space-4), 2vw, var(--space-8));
-    padding: clamp(var(--space-4), 2vh, var(--space-8)) clamp(var(--space-6), 3vw, var(--space-10));
+    /* Narrower panels buy the channel its width without shrinking the board:
+       widening the gap alone just moved slack around, because the board is
+       centred in 1fr and reclaimed whatever the gap gave up. */
+    grid-template-columns: clamp(200px, 18vw, 300px) 1fr clamp(200px, 18vw, 300px);
+    gap: clamp(var(--space-8), 5vw, var(--space-16));
+    /* The panels used to run almost from the header to the bottom edge. */
+    padding: clamp(var(--space-8), 7vh, var(--space-16)) clamp(var(--space-6), 3vw, var(--space-10));
     align-items: stretch;
   }
 `;
@@ -70,6 +73,17 @@ const DesktopMain = styled.main`
 const PanelSlot = styled.div`
   display: flex;
   align-items: stretch;
+  overflow: visible;
+
+  /* The panel had no width, so as a flex item it sized to its content and sat
+     at flex-start — the left edge of its own column. On the left that passed
+     for correct; on the right it left a gap between the panel and the page
+     edge, so P2 read as closer to the board than P1. Filling the column makes
+     both symmetric and anchors each to its outer edge. */
+  > * {
+    flex: 1;
+    min-width: 0;
+  }
 `;
 
 const BoardColumn = styled.div`
@@ -79,11 +93,6 @@ const BoardColumn = styled.div`
   justify-content: center;
   gap: clamp(var(--space-3), 2vh, var(--space-6));
   min-height: 0;
-`;
-
-/* ── Bottom bar — visible on all breakpoints ── */
-const BottomBar = styled.div`
-  display: flex;
 `;
 
 /* ── Shared ── */
@@ -129,7 +138,6 @@ export default function GamePage() {
     reset,
     setMode,
     setDifficulty,
-    selectCol,
   } = useGame();
 
   const { enabled: soundEnabled, toggle: toggleSound, playDrop, playWin, playDraw, playReset } = useSound();
@@ -137,6 +145,7 @@ export default function GamePage() {
   const [hoveredCol, setHoveredCol] = useState(3);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [setupDone, setSetupDone] = useState(false);
+  const [showEndModal, setShowEndModal] = useState(false);
   const [playerNames, setPlayerNames] = useState<{ 1: string; 2: string }>(() => {
     if (typeof window === "undefined") return { 1: "P1", 2: "P2" };
     return {
@@ -175,7 +184,7 @@ export default function GamePage() {
     announce(`${playerNames[player]} dropped in column ${col + 1}`);
 
     const tStart = setTimeout(() => setDroppingCell({ row, col }), 0);
-    const tEnd = setTimeout(() => setDroppingCell(null), 600);
+    const tEnd = setTimeout(() => setDroppingCell(null), 500);
     return () => { clearTimeout(tStart); clearTimeout(tEnd); };
   }, [game.lastMove, game.board, playDrop, announce, playerNames]);
 
@@ -191,17 +200,29 @@ export default function GamePage() {
     }
   }, [game.status, game.winner, playerNames, announce, playWin, playDraw]);
 
-  function handleColumnClick(col: number) {
+  const isGameOver = game.status === "won" || game.status === "draw";
+  const isDraw = game.status === "draw";
+
+  /* Hold the modal back so the win is legible: the last disc still has its drop
+     animation to finish (~0.5s), and the winning line pulses on a 0.9s cycle.
+     Covering that instantly left the player with no idea what had just happened. */
+  useEffect(() => {
+    if (!isGameOver) return;
+    const t = setTimeout(() => setShowEndModal(true), 1400);
+    return () => clearTimeout(t);
+  }, [isGameOver]);
+
+  const handleColumnClick = useCallback((col: number) => {
     if (game.status !== "playing" || isAiThinking) return;
     drop(col);
-  }
+  }, [game.status, isAiThinking, drop]);
 
-  function handleColumnHover(col: number) {
-    if (col !== hoveredCol) {
-      setHoveredCol(col);
-      selectCol(col);
-    }
-  }
+  /* Only local state now. This used to also dispatch SELECT_COL into the game
+     reducer, which produced a fresh game object on every mouse move between
+     columns and re-rendered the whole tree — to update a field nothing read. */
+  const handleColumnHover = useCallback((col: number) => {
+    setHoveredCol((prev) => (prev === col ? prev : col));
+  }, []);
 
   function handleSetupConfirm(names: { p1: string; p2: string }, newMode: GameMode, newDifficulty: AiDifficulty) {
     localStorage.setItem(LS_P1, names.p1);
@@ -215,16 +236,16 @@ export default function GamePage() {
   function handleChangeSetup() {
     playReset();
     reset();
+    setShowEndModal(false);
     setSetupDone(false);
   }
 
   function handlePlayAgain() {
     playReset();
     reset();
+    setShowEndModal(false);
   }
 
-  const isGameOver = game.status === "won" || game.status === "draw";
-  const isDraw = game.status === "draw";
 
   function getTurnLabel(forPlayer: Player): string {
     if (isGameOver) return "";
@@ -266,6 +287,7 @@ export default function GamePage() {
         onToggleSound={toggleSound}
         isFullscreen={isFullscreen}
         onToggleFullscreen={supportsFullscreen ? toggleFullscreen : undefined}
+        onNewGame={setupDone ? handleChangeSetup : undefined}
       />
 
       <ClientOnly>
@@ -278,6 +300,17 @@ export default function GamePage() {
           initialDifficulty={aiDifficulty}
           initialNames={{ p1: playerNames[1], p2: playerNames[2] }}
           onConfirm={handleSetupConfirm}
+        />
+      )}
+
+      {setupDone && isGameOver && showEndModal && (
+        <GameOverModal
+          winner={game.winner}
+          isDraw={isDraw}
+          names={playerNames}
+          scores={scores}
+          onPlayAgain={handlePlayAgain}
+          onChangePlayers={handleChangeSetup}
         />
       )}
 
@@ -294,9 +327,7 @@ export default function GamePage() {
           />
           {sharedBoard}
           <StatusArea>
-            {isGameOver ? (
-              <GameStatus onPlayAgain={handlePlayAgain} />
-            ) : (
+            {!isGameOver && (
               <TurnLabel $player={game.currentPlayer} aria-live="polite">
                 {getMobileTurnText()}
               </TurnLabel>
@@ -316,16 +347,13 @@ export default function GamePage() {
             isWinner={game.winner === 1}
             isDraw={isDraw}
             turnLabel={getTurnLabel(1)}
+            side="left"
           />
         </PanelSlot>
 
         <BoardColumn>
           {sharedBoard}
-          <StatusArea>
-            {isGameOver ? (
-              <GameStatus onPlayAgain={handlePlayAgain} />
-            ) : null}
-          </StatusArea>
+          <StatusArea />
         </BoardColumn>
 
         <PanelSlot>
@@ -337,21 +365,10 @@ export default function GamePage() {
             isWinner={game.winner === 2}
             isDraw={isDraw}
             turnLabel={getTurnLabel(2)}
+            side="right"
           />
         </PanelSlot>
       </DesktopMain>
-
-      {/* ── Desktop bottom bar ── */}
-      <BottomBar>
-        <GameControls
-          mode={mode}
-          difficulty={aiDifficulty}
-          isGameOver={isGameOver}
-          onSetMode={setMode}
-          onSetDifficulty={setDifficulty}
-          onChangeSetup={handleChangeSetup}
-        />
-      </BottomBar>
     </PageWrapper>
   );
 }
