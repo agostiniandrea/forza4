@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useReducer, useRef } from "react";
-import { GameState, createInitialState, dropPiece, COLS } from "@/lib/game-engine";
+import { GameState, createInitialState, dropPiece } from "@/lib/game-engine";
 import { AiDifficulty, getBestMove } from "@/lib/ai";
 
 export type GameMode = "2p" | "ai";
@@ -11,7 +11,6 @@ interface FullState {
   mode: GameMode;
   aiDifficulty: AiDifficulty;
   scores: { 1: number; 2: number };
-  selectedCol: number;
   isAiThinking: boolean;
 }
 
@@ -21,7 +20,6 @@ type Action =
   | { type: "RESET" }
   | { type: "SET_MODE"; mode: GameMode }
   | { type: "SET_DIFFICULTY"; difficulty: AiDifficulty }
-  | { type: "SELECT_COL"; col: number }
   | { type: "AI_THINKING"; value: boolean };
 
 function reducer(state: FullState, action: Action): FullState {
@@ -45,8 +43,6 @@ function reducer(state: FullState, action: Action): FullState {
       return { ...state, mode: action.mode, game: createInitialState(), isAiThinking: false };
     case "SET_DIFFICULTY":
       return { ...state, aiDifficulty: action.difficulty, game: createInitialState(), isAiThinking: false };
-    case "SELECT_COL":
-      return { ...state, selectedCol: action.col };
     case "AI_THINKING":
       return { ...state, isAiThinking: action.value };
     default:
@@ -59,7 +55,6 @@ const initial: FullState = {
   mode: "2p",
   aiDifficulty: "medium",
   scores: { 1: 0, 2: 0 },
-  selectedCol: 3,
   isAiThinking: false,
 };
 
@@ -113,17 +108,11 @@ export function useGame() {
     dispatch({ type: "SET_DIFFICULTY", difficulty });
   }, []);
 
-  const selectCol = useCallback((col: number) => {
-    const clamped = Math.max(0, Math.min(COLS - 1, col));
-    dispatch({ type: "SELECT_COL", col: clamped });
-  }, []);
-
   return {
     ...state,
     drop,
     reset,
     setMode,
     setDifficulty,
-    selectCol,
   };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import styled from "styled-components";
 import type { Player } from "@/lib/game-engine";
 import { useGame } from "@/hooks/useGame";
@@ -138,7 +138,6 @@ export default function GamePage() {
     reset,
     setMode,
     setDifficulty,
-    selectCol,
   } = useGame();
 
   const { enabled: soundEnabled, toggle: toggleSound, playDrop, playWin, playDraw, playReset } = useSound();
@@ -146,6 +145,7 @@ export default function GamePage() {
   const [hoveredCol, setHoveredCol] = useState(3);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [setupDone, setSetupDone] = useState(false);
+  const [showEndModal, setShowEndModal] = useState(false);
   const [playerNames, setPlayerNames] = useState<{ 1: string; 2: string }>(() => {
     if (typeof window === "undefined") return { 1: "P1", 2: "P2" };
     return {
@@ -200,17 +200,29 @@ export default function GamePage() {
     }
   }, [game.status, game.winner, playerNames, announce, playWin, playDraw]);
 
-  function handleColumnClick(col: number) {
+  const isGameOver = game.status === "won" || game.status === "draw";
+  const isDraw = game.status === "draw";
+
+  /* Hold the modal back so the win is legible: the last disc still has its drop
+     animation to finish (~0.5s), and the winning line pulses on a 0.9s cycle.
+     Covering that instantly left the player with no idea what had just happened. */
+  useEffect(() => {
+    if (!isGameOver) return;
+    const t = setTimeout(() => setShowEndModal(true), 1400);
+    return () => clearTimeout(t);
+  }, [isGameOver]);
+
+  const handleColumnClick = useCallback((col: number) => {
     if (game.status !== "playing" || isAiThinking) return;
     drop(col);
-  }
+  }, [game.status, isAiThinking, drop]);
 
-  function handleColumnHover(col: number) {
-    if (col !== hoveredCol) {
-      setHoveredCol(col);
-      selectCol(col);
-    }
-  }
+  /* Only local state now. This used to also dispatch SELECT_COL into the game
+     reducer, which produced a fresh game object on every mouse move between
+     columns and re-rendered the whole tree — to update a field nothing read. */
+  const handleColumnHover = useCallback((col: number) => {
+    setHoveredCol((prev) => (prev === col ? prev : col));
+  }, []);
 
   function handleSetupConfirm(names: { p1: string; p2: string }, newMode: GameMode, newDifficulty: AiDifficulty) {
     localStorage.setItem(LS_P1, names.p1);
@@ -224,16 +236,16 @@ export default function GamePage() {
   function handleChangeSetup() {
     playReset();
     reset();
+    setShowEndModal(false);
     setSetupDone(false);
   }
 
   function handlePlayAgain() {
     playReset();
     reset();
+    setShowEndModal(false);
   }
 
-  const isGameOver = game.status === "won" || game.status === "draw";
-  const isDraw = game.status === "draw";
 
   function getTurnLabel(forPlayer: Player): string {
     if (isGameOver) return "";
@@ -291,7 +303,7 @@ export default function GamePage() {
         />
       )}
 
-      {setupDone && isGameOver && (
+      {setupDone && isGameOver && showEndModal && (
         <GameOverModal
           winner={game.winner}
           isDraw={isDraw}

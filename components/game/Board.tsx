@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useEffect } from "react";
+import { memo, useRef, useCallback, useEffect } from "react";
 import styled, { css, keyframes } from "styled-components";
 import type { Board as BoardType, Player } from "@/lib/game-engine";
 import { ROWS, COLS, getDropRow, isColumnFull } from "@/lib/game-engine";
@@ -151,6 +151,52 @@ const Cell = styled.div<{ $hovering: boolean; $hasWinPiece: boolean; $dropping: 
     `}
 `;
 
+interface BoardCellProps {
+  row: number;
+  col: number;
+  cell: Player | null;
+  hovering: boolean;
+  winning: boolean;
+  dropping: boolean;
+  disabled: boolean;
+  onClick: (col: number) => void;
+  onHover: (col: number) => void;
+}
+
+/* Every prop is a primitive or a stable callback, so moving the pointer between
+   two columns re-renders those two and leaves the other thirty cells alone.
+   Without this each hover re-ran all forty-two through styled-components. */
+const BoardCell = memo(function BoardCell({
+  row, col, cell, hovering, winning, dropping, disabled, onClick, onHover,
+}: BoardCellProps) {
+  let ariaLabel: string;
+  if (!cell) ariaLabel = "Empty";
+  else if (winning) ariaLabel = cell === 1 ? "Red disc — winning piece" : "Yellow disc — winning piece";
+  else ariaLabel = cell === 1 ? "Red disc" : "Yellow disc";
+
+  return (
+    <Cell
+      role="gridcell"
+      aria-label={ariaLabel}
+      $hovering={hovering}
+      $hasWinPiece={winning}
+      $dropping={dropping}
+      onClick={() => !disabled && onClick(col)}
+      onMouseEnter={() => !disabled && onHover(col)}
+      style={{ cursor: disabled || cell ? "default" : "pointer" }}
+    >
+      {cell && (
+        <Piece
+          player={cell}
+          dropping={dropping}
+          droppingRow={dropping ? row : undefined}
+          winning={winning}
+        />
+      )}
+    </Cell>
+  );
+});
+
 interface Props {
   board: BoardType;
   currentPlayer: Player;
@@ -231,41 +277,20 @@ export default function Board({
           onBlur={onColumnLeave}
         >
           {Array.from({ length: ROWS }, (_, row) =>
-            Array.from({ length: COLS }, (_, col) => {
-              const cell = board[row][col];
-              const isWin = winSet.has(`${row}-${col}`);
-              const isDropping = droppingCell?.row === row && droppingCell?.col === col;
-              const isHovered = !disabled && col === hoveredCol && !cell;
-
-              let ariaLabel: string;
-              if (!cell) ariaLabel = "Empty";
-              else if (isWin) ariaLabel = cell === 1 ? "Red disc — winning piece" : "Yellow disc — winning piece";
-              else ariaLabel = cell === 1 ? "Red disc" : "Yellow disc";
-
-              return (
-                <Cell
-                  key={`${row}-${col}`}
-                  role="gridcell"
-                  aria-label={ariaLabel}
-                  $hovering={isHovered}
-                  $hasWinPiece={isWin}
-                  $dropping={isDropping}
-                  onClick={() => !disabled && onColumnClick(col)}
-                  onMouseEnter={() => !disabled && onColumnHover(col)}
-                  onMouseLeave={onColumnLeave}
-                  style={{ cursor: disabled || cell ? "default" : "pointer" }}
-                >
-                  {cell && (
-                    <Piece
-                      player={cell}
-                      dropping={isDropping}
-                      droppingRow={isDropping ? row : undefined}
-                      winning={isWin}
-                    />
-                  )}
-                </Cell>
-              );
-            })
+            Array.from({ length: COLS }, (_, col) => (
+              <BoardCell
+                key={`${row}-${col}`}
+                row={row}
+                col={col}
+                cell={board[row][col]}
+                hovering={!disabled && col === hoveredCol && !board[row][col]}
+                winning={winSet.has(`${row}-${col}`)}
+                dropping={droppingCell?.row === row && droppingCell?.col === col}
+                disabled={disabled}
+                onClick={onColumnClick}
+                onHover={onColumnHover}
+              />
+            ))
           )}
         </Grid>
       </BoardFrame>
