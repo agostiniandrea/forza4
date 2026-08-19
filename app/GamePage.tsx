@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import styled, { keyframes } from "styled-components";
+import styled from "styled-components";
 import type { Player } from "@/lib/game-engine";
 import { useGame } from "@/hooks/useGame";
 import { useSound } from "@/hooks/useSound";
@@ -12,18 +12,12 @@ import SkipLink from "@/components/layout/SkipLink";
 import Board from "@/components/game/Board";
 import PlayerIndicator from "@/components/game/PlayerIndicator";
 import PlayerPanel from "@/components/game/PlayerPanel";
-import GameStatus from "@/components/game/GameStatus";
-import GameControls from "@/components/game/GameControls";
+import GameOverModal from "@/components/game/GameOverModal";
 import NameEntry from "@/components/game/NameEntry";
 import Confetti from "@/components/game/Confetti";
 import ClientOnly from "@/lib/ClientOnly";
 import type { GameMode } from "@/hooks/useGame";
 import type { AiDifficulty } from "@/lib/ai";
-
-const settingsIn = keyframes`
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-`;
 
 const PageWrapper = styled.div`
   position: fixed;
@@ -65,9 +59,13 @@ const DesktopMain = styled.main`
     flex: 1;
     min-height: 0;
     display: grid;
-    grid-template-columns: clamp(220px, 22vw, 340px) 1fr clamp(220px, 22vw, 340px);
-    gap: clamp(var(--space-4), 2vw, var(--space-8));
-    padding: clamp(var(--space-4), 2vh, var(--space-8)) clamp(var(--space-6), 3vw, var(--space-10));
+    /* Narrower panels buy the channel its width without shrinking the board:
+       widening the gap alone just moved slack around, because the board is
+       centred in 1fr and reclaimed whatever the gap gave up. */
+    grid-template-columns: clamp(200px, 18vw, 300px) 1fr clamp(200px, 18vw, 300px);
+    gap: clamp(var(--space-8), 5vw, var(--space-16));
+    /* The panels used to run almost from the header to the bottom edge. */
+    padding: clamp(var(--space-8), 7vh, var(--space-16)) clamp(var(--space-6), 3vw, var(--space-10));
     align-items: stretch;
   }
 `;
@@ -76,6 +74,16 @@ const PanelSlot = styled.div`
   display: flex;
   align-items: stretch;
   overflow: visible;
+
+  /* The panel had no width, so as a flex item it sized to its content and sat
+     at flex-start — the left edge of its own column. On the left that passed
+     for correct; on the right it left a gap between the panel and the page
+     edge, so P2 read as closer to the board than P1. Filling the column makes
+     both symmetric and anchors each to its outer edge. */
+  > * {
+    flex: 1;
+    min-width: 0;
+  }
 `;
 
 const BoardColumn = styled.div`
@@ -85,22 +93,6 @@ const BoardColumn = styled.div`
   justify-content: center;
   gap: clamp(var(--space-3), 2vh, var(--space-6));
   min-height: 0;
-`;
-
-/* ── Settings bar — only between games, never during one ── */
-const SettingsBar = styled.div`
-  /* Desktop only. On a phone this bar is ~430px of stacked controls, which
-     clipped the Play again button against the fixed viewport — and it only
-     duplicates the setup screen, which already carries mode and difficulty.
-     Mobile reaches those through the header instead. */
-  display: none;
-
-  ${mq.lg} {
-    /* block, not flex: as a flex child the bar shrank to its content and
-       parked itself on the left edge instead of spanning the viewport */
-    display: block;
-    animation: ${settingsIn} var(--transition-normal) ease-out;
-  }
 `;
 
 /* ── Shared ── */
@@ -299,6 +291,17 @@ export default function GamePage() {
         />
       )}
 
+      {setupDone && isGameOver && (
+        <GameOverModal
+          winner={game.winner}
+          isDraw={isDraw}
+          names={playerNames}
+          scores={scores}
+          onPlayAgain={handlePlayAgain}
+          onChangePlayers={handleChangeSetup}
+        />
+      )}
+
       {/* ── Mobile layout ── */}
       <MobileMain id="main-content">
         <MobileGameArea>
@@ -312,9 +315,7 @@ export default function GamePage() {
           />
           {sharedBoard}
           <StatusArea>
-            {isGameOver ? (
-              <GameStatus onPlayAgain={handlePlayAgain} />
-            ) : (
+            {!isGameOver && (
               <TurnLabel $player={game.currentPlayer} aria-live="polite">
                 {getMobileTurnText()}
               </TurnLabel>
@@ -340,11 +341,7 @@ export default function GamePage() {
 
         <BoardColumn>
           {sharedBoard}
-          <StatusArea>
-            {isGameOver ? (
-              <GameStatus onPlayAgain={handlePlayAgain} />
-            ) : null}
-          </StatusArea>
+          <StatusArea />
         </BoardColumn>
 
         <PanelSlot>
@@ -360,20 +357,6 @@ export default function GamePage() {
           />
         </PanelSlot>
       </DesktopMain>
-
-      {/* ── Settings: between games only. During play the board gets the room,
-             and the header keeps an escape hatch. ── */}
-      {setupDone && isGameOver && (
-        <SettingsBar>
-          <GameControls
-            mode={mode}
-            difficulty={aiDifficulty}
-            onSetMode={setMode}
-            onSetDifficulty={setDifficulty}
-            onChangeSetup={handleChangeSetup}
-          />
-        </SettingsBar>
-      )}
     </PageWrapper>
   );
 }

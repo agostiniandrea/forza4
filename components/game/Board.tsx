@@ -42,7 +42,9 @@ const ColumnIndicator = styled.div`
   margin-bottom: var(--space-2);
   height: 32px;
 
-  @media (hover: none) { visibility: hidden; }
+  /* No pointer, no pointer affordance. display:none rather than
+     visibility:hidden so it stops reserving the row and stops animating. */
+  @media (hover: none) { display: none; }
 `;
 
 const DropIndicator = styled.div<{ $visible: boolean; $player: Player }>`
@@ -134,11 +136,13 @@ const Cell = styled.div<{ $hovering: boolean; $hasWinPiece: boolean; $dropping: 
 
   ${({ $hovering }) =>
     $hovering && css`
-      background: radial-gradient(circle at 50% 60%, #0d1830 0%, rgba(255,255,255,0.05) 70%);
-      box-shadow:
-        inset 0 5px 12px rgba(0,0,0,0.75),
-        inset 0 2px 5px rgba(0,0,0,0.5),
-        inset 0 0 14px rgba(255,255,255,0.06);
+      @media (hover: hover) {
+        background: radial-gradient(circle at 50% 60%, #0d1830 0%, rgba(255,255,255,0.05) 70%);
+        box-shadow:
+          inset 0 5px 12px rgba(0,0,0,0.75),
+          inset 0 2px 5px rgba(0,0,0,0.5),
+          inset 0 0 14px rgba(255,255,255,0.06);
+      }
     `}
 
   ${({ $hasWinPiece }) =>

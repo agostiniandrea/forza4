@@ -93,7 +93,7 @@
    the board during play. */
 @media (min-width: 1024px) {
   :root {
-    --cell-size: clamp(40px, min(5.4vw, 9.6vh), 104px);
+    --cell-size: clamp(40px, min(5vw, 9.6vh), 104px);
   }
 }
 
