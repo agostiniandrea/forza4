@@ -1,6 +1,6 @@
 # Forza 4 — Project Context
 
-Next.js 16 · React 19 · TypeScript 6 · styled-components 6.4 · next-intl 4.x · Tailwind v4
+Next.js 16 · React 19 · TypeScript 6 · styled-components 6.4 · Tailwind v4
 
 **Live:** https://forza4-game.vercel.app  
 **GitHub:** https://github.com/agostiniandrea/forza4  
@@ -9,7 +9,7 @@ Next.js 16 · React 19 · TypeScript 6 · styled-components 6.4 · next-intl 4.x
 ## What this is
 
 A beautiful, accessible Connect Four game with:
-- Three languages: English (`/en`), Italian (`/it`), Thai (`/th`) — default locale is `en`
+- English only — the three-locale setup and next-intl were removed
 - AI opponent (minimax + alpha-beta pruning, 3 difficulty levels) or 2-player mode
 - Web Audio API sounds (synthesized, no files) — distinct tones per player, win fanfare, draw, reset
 - Confetti burst on win
@@ -20,9 +20,7 @@ A beautiful, accessible Connect Four game with:
 
 | Concern | Approach |
 |---|---|
-| Routing | `app/[locale]/` — locale segment always present |
-| i18n | next-intl; messages in `messages/en.json`, `messages/it.json`, `messages/th.json` |
-| Proxy (middleware) | `proxy.ts` (Next 16 convention, replaces `middleware.ts`) |
+| Routing | Single route at `app/page.tsx` — no locale segment, no middleware |
 | Styling | styled-components for components; Tailwind for layout utilities |
 | Design tokens | CSS custom properties in `app/globals.css` |
 | Breakpoints | `lib/breakpoints.ts` → `mq.sm/md/lg/xl` for styled-components |
@@ -43,9 +41,12 @@ A beautiful, accessible Connect Four game with:
 | `hooks/useAnnouncer.ts` | ARIA live region for screen reader announcements |
 | `components/game/Board.tsx` | 7×6 grid, keyboard handling, column hover |
 | `components/game/Piece.tsx` | Disc with drop animation and win glow |
-| `components/game/GameStatus.tsx` | Win/draw overlay |
+| `components/game/GameOverModal.tsx` | End-of-game dialog — result, score, rematch or back to setup |
+| `components/game/NameEntry.tsx` | Setup screen — names, mode and difficulty all live here |
+| `components/game/PlayerPanel.tsx` | Desktop side panel (disc, score, turn badge) |
+| `components/game/PlayerIndicator.tsx` | Mobile score row |
 | `components/game/Confetti.tsx` | CSS particle burst on win |
-| `app/[locale]/page.tsx` | Main game page — wires everything together |
+| `app/GamePage.tsx` | Main game page — wires everything together |
 
 ## Game constants
 
@@ -77,6 +78,5 @@ yarn test        # all tests pass
 
 ## Extending the game
 
-- **New language:** add `messages/<locale>.json` and add the locale to `i18n/routing.ts`
 - **New sound:** add a function to `lib/sound-engine.ts` and expose it via `hooks/useSound.ts`
-- **New game mode:** extend `GameMode` in `hooks/useGame.ts` and add a segment button in `components/game/GameControls.tsx`
+- **New game mode:** extend `GameMode` in `hooks/useGame.ts` and add a segment button in `components/game/NameEntry.tsx` — the setup screen is the only place mode and difficulty are chosen
