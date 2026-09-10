@@ -99,17 +99,10 @@ export default function GameOverModal({
     playAgainRef.current?.focus();
   }, []);
 
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        onPlayAgain();
-      }
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onPlayAgain]);
-
+  // "Play again" is autofocused above, so a native Enter/Space press already
+  // triggers it via the button itself — a global window keydown listener here
+  // used to fire onPlayAgain() a second time (audible double "swoosh"), and
+  // unconditionally, even while "Change players" had focus.
   const title = isDraw ? "It's a draw" : `${names[winner!]} wins!`;
 
   return (

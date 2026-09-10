@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useState } from "react";
 import styled, { keyframes } from "styled-components";
 
 const fall = keyframes`
@@ -41,26 +41,40 @@ function rand(min: number, max: number) {
   return min + Math.random() * (max - min);
 }
 
-const particles = Array.from({ length: 60 }, (_, i) => ({
-  id: i,
-  x: rand(0, 100),
-  color: colors[Math.floor(Math.random() * colors.length)],
-  size: rand(6, 14),
-  duration: rand(2.5, 4.5),
-  delay: rand(0, 0.8),
-  shape: Math.random() > 0.5 ? ("circle" as const) : ("rect" as const),
-}));
+function makeParticles() {
+  return Array.from({ length: 60 }, (_, i) => ({
+    id: i,
+    x: rand(0, 100),
+    color: colors[Math.floor(Math.random() * colors.length)],
+    size: rand(6, 14),
+    duration: rand(2.5, 4.5),
+    delay: rand(0, 0.8),
+    shape: Math.random() > 0.5 ? ("circle" as const) : ("rect" as const),
+  }));
+}
 
 interface Props {
   active: boolean;
 }
 
 export default function Confetti({ active }: Props) {
+  // A fresh burst each time the game is won, not the same 60 particles replayed
+  // for every celebration in the session. Generated during render (not an
+  // effect) on the false->true edge, per React's "adjusting state during
+  // rendering" pattern — avoids an extra render pass from a setState-in-effect.
+  const [prev, setPrev] = useState<{ active: boolean; particles: ReturnType<typeof makeParticles> }>(
+    () => ({ active, particles: active ? makeParticles() : [] })
+  );
+
+  if (prev.active !== active) {
+    setPrev({ active, particles: active ? makeParticles() : [] });
+  }
+
   if (!active) return null;
 
   return (
     <>
-      {particles.map((p) => (
+      {prev.particles.map((p) => (
         <Particle
           key={p.id}
           $x={p.x}

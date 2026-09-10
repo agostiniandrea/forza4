@@ -70,11 +70,12 @@ export function useGame() {
       const currentPlayer = state.game.currentPlayer;
       dispatch({ type: "DROP", col });
 
-      if (
-        state.mode === "ai" &&
-        state.game.status === "playing" &&
-        currentPlayer === 1
-      ) {
+      // `state` here is still the pre-move snapshot (dispatch hasn't applied
+      // yet), so `state.game.status` is always "playing" — the drop() guard
+      // above already ensured that. Whether the human's move just won or drew
+      // the game is checked for real below, via `testGame`, once we recompute
+      // the post-move board.
+      if (state.mode === "ai" && currentPlayer === 1) {
         dispatch({ type: "AI_THINKING", value: true });
         const board = state.game.board;
         const difficulty = state.aiDifficulty;

@@ -3,7 +3,7 @@
 import { memo, useRef, useCallback, useEffect } from "react";
 import styled, { css, keyframes } from "styled-components";
 import type { Board as BoardType, Player } from "@/lib/game-engine";
-import { ROWS, COLS, getDropRow, isColumnFull } from "@/lib/game-engine";
+import { ROWS, COLS } from "@/lib/game-engine";
 import Piece from "./Piece";
 
 const hoverPulse = keyframes`
@@ -104,11 +104,6 @@ const Grid = styled.div`
   grid-template-columns: repeat(${COLS}, var(--cell-size));
   grid-template-rows: repeat(${ROWS}, var(--cell-size));
   gap: var(--cell-gap);
-`;
-
-const ColumnButton = styled.button<{ $disabled: boolean }>`
-  display: contents;
-  cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
 `;
 
 const Cell = styled.div<{ $hovering: boolean; $hasWinPiece: boolean; $dropping: boolean }>`
