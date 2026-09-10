@@ -2,11 +2,12 @@
   "name": "forza4",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --quiet",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "jest --passWithNoTests",
     "test:coverage": "jest --coverage",
