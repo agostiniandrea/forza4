@@ -35,7 +35,7 @@
   --color-accent:       #00D4FF;
   --color-accent-glow:  rgba(0, 212, 255, 0.4);
   --color-text:         #E8F0FF;
-  --color-text-muted:   #5A6A99;
+  --color-text-muted:   #7080B0; /* lightened from #5A6A99 — axe flagged 3.55:1 against --color-surface, below WCAG AA's 4.5:1 for normal text */
   --color-text-dim:     #3A4470;
   --color-border:       rgba(255, 255, 255, 0.07);
   --color-border-glow:  rgba(0, 212, 255, 0.25);

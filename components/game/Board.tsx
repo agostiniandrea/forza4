@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useRef, useCallback, useEffect } from "react";
+import { memo, useRef, useCallback, useEffect, useId } from "react";
 import styled, { css, keyframes } from "styled-components";
 import type { Board as BoardType, Player } from "@/lib/game-engine";
 import { ROWS, COLS } from "@/lib/game-engine";
@@ -106,6 +106,15 @@ const Grid = styled.div`
   gap: var(--cell-gap);
 `;
 
+/* WAI-ARIA requires a grid's rows to be exposed as `role="row"` between the
+   grid and its gridcells — axe's aria-required-children flags a grid whose
+   cells sit directly under it. `display: contents` keeps this wrapper out of
+   the box model entirely, so its children still lay out as direct items of
+   the CSS Grid above; only the accessibility tree gains the row grouping. */
+const Row = styled.div`
+  display: contents;
+`;
+
 const Cell = styled.div<{ $hovering: boolean; $hasWinPiece: boolean; $dropping: boolean }>`
   width: var(--cell-size);
   height: var(--cell-size);
@@ -173,6 +182,7 @@ const BoardCell = memo(function BoardCell({
     <Cell
       role="gridcell"
       aria-label={ariaLabel}
+      data-testid={`cell-${row}-${col}`}
       $hovering={hovering}
       $hasWinPiece={winning}
       $dropping={dropping}
@@ -217,6 +227,11 @@ export default function Board({
 }: Props) {
   const boardRef = useRef<HTMLDivElement>(null);
   const hoveredCol = selectedCol;
+  // GamePage mounts this component twice at once (mobile + desktop layout,
+  // switched purely by CSS) — a hardcoded id here would collide across both
+  // instances and leave `aria-describedby` pointing at two elements at once.
+  // useId() gives each mounted Board its own stable, unique id.
+  const hintId = useId();
 
   const winSet = new Set(winCells?.map(([r, c]) => `${r}-${c}`) ?? []);
 
@@ -266,32 +281,35 @@ export default function Board({
           ref={boardRef}
           role="grid"
           aria-label={`Connect Four board, ${ROWS} rows by ${COLS} columns`}
-          aria-describedby="keyboard-hint"
+          aria-describedby={hintId}
+          data-testid="board-grid"
           tabIndex={0}
           onKeyDown={handleKeyDown}
           onBlur={onColumnLeave}
         >
-          {Array.from({ length: ROWS }, (_, row) =>
-            Array.from({ length: COLS }, (_, col) => (
-              <BoardCell
-                key={`${row}-${col}`}
-                row={row}
-                col={col}
-                cell={board[row][col]}
-                hovering={!disabled && col === hoveredCol && !board[row][col]}
-                winning={winSet.has(`${row}-${col}`)}
-                dropping={droppingCell?.row === row && droppingCell?.col === col}
-                disabled={disabled}
-                onClick={onColumnClick}
-                onHover={onColumnHover}
-              />
-            ))
-          )}
+          {Array.from({ length: ROWS }, (_, row) => (
+            <Row key={row} role="row">
+              {Array.from({ length: COLS }, (_, col) => (
+                <BoardCell
+                  key={`${row}-${col}`}
+                  row={row}
+                  col={col}
+                  cell={board[row][col]}
+                  hovering={!disabled && col === hoveredCol && !board[row][col]}
+                  winning={winSet.has(`${row}-${col}`)}
+                  dropping={droppingCell?.row === row && droppingCell?.col === col}
+                  disabled={disabled}
+                  onClick={onColumnClick}
+                  onHover={onColumnHover}
+                />
+              ))}
+            </Row>
+          ))}
         </Grid>
       </BoardFrame>
       </BoardDepthWrapper>
 
-      <p id="keyboard-hint" className="sr-only">
+      <p id={hintId} className="sr-only">
         Use arrow keys to choose column, Enter to drop
       </p>
     </BoardWrapper>

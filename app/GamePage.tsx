@@ -27,8 +27,19 @@ const PageWrapper = styled.div`
   overflow: hidden;
 `;
 
+/* Single landmark wrapping both layouts below — see the note above
+   DesktopMain for why neither of them is a <main> itself. Mirrors
+   PageWrapper's own flex column so nesting it doesn't change any sizing. */
+const MainLandmark = styled.main`
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+`;
+
 /* ── Mobile layout ── */
-const MobileMain = styled.main`
+const MobileMain = styled.div`
   flex: 1;
   min-height: 0;
   display: flex;
@@ -53,7 +64,13 @@ const MobileGameArea = styled.div`
 
 
 /* ── Desktop layout ── */
-const DesktopMain = styled.main`
+// A `div`, not `main`: both layouts render at once (CSS is the only thing
+// hiding one of them), so giving each its own <main> produced two "main"
+// landmarks for one page (axe's landmark-no-duplicate-main). Making only
+// one of the two a <main> fixed that, but then left the *other* layout's
+// content sitting outside any landmark at all when it was the visible one
+// (axe's region rule) — hence MainLandmark above, wrapping both.
+const DesktopMain = styled.div`
   display: none;
   ${mq.lg} {
     flex: 1;
@@ -314,61 +331,63 @@ export default function GamePage() {
         />
       )}
 
-      {/* ── Mobile layout ── */}
-      <MobileMain id="main-content">
-        <MobileGameArea>
-          <PlayerIndicator
-            currentPlayer={game.currentPlayer}
-            winner={game.winner}
-            isDraw={isDraw}
-            scores={scores}
-            names={playerNames}
-            turnLabels={{ 1: getTurnLabel(1), 2: getTurnLabel(2) }}
-          />
-          {sharedBoard}
-          <StatusArea>
-            {!isGameOver && (
-              <TurnLabel $player={game.currentPlayer} aria-live="polite">
-                {getMobileTurnText()}
-              </TurnLabel>
-            )}
-          </StatusArea>
-        </MobileGameArea>
-      </MobileMain>
+      <MainLandmark id="main-content">
+        {/* ── Mobile layout ── */}
+        <MobileMain data-testid="mobile-layout">
+          <MobileGameArea>
+            <PlayerIndicator
+              currentPlayer={game.currentPlayer}
+              winner={game.winner}
+              isDraw={isDraw}
+              scores={scores}
+              names={playerNames}
+              turnLabels={{ 1: getTurnLabel(1), 2: getTurnLabel(2) }}
+            />
+            {sharedBoard}
+            <StatusArea>
+              {!isGameOver && (
+                <TurnLabel $player={game.currentPlayer} aria-live="polite">
+                  {getMobileTurnText()}
+                </TurnLabel>
+              )}
+            </StatusArea>
+          </MobileGameArea>
+        </MobileMain>
 
-      {/* ── Desktop layout ── */}
-      <DesktopMain>
-        <PanelSlot>
-          <PlayerPanel
-            player={1}
-            name={playerNames[1]}
-            score={scores[1]}
-            isActive={!isGameOver && game.currentPlayer === 1}
-            isWinner={game.winner === 1}
-            isDraw={isDraw}
-            turnLabel={getTurnLabel(1)}
-            side="left"
-          />
-        </PanelSlot>
+        {/* ── Desktop layout ── */}
+        <DesktopMain data-testid="desktop-layout">
+          <PanelSlot>
+            <PlayerPanel
+              player={1}
+              name={playerNames[1]}
+              score={scores[1]}
+              isActive={!isGameOver && game.currentPlayer === 1}
+              isWinner={game.winner === 1}
+              isDraw={isDraw}
+              turnLabel={getTurnLabel(1)}
+              side="left"
+            />
+          </PanelSlot>
 
-        <BoardColumn>
-          {sharedBoard}
-          <StatusArea />
-        </BoardColumn>
+          <BoardColumn>
+            {sharedBoard}
+            <StatusArea />
+          </BoardColumn>
 
-        <PanelSlot>
-          <PlayerPanel
-            player={2}
-            name={playerNames[2]}
-            score={scores[2]}
-            isActive={!isGameOver && game.currentPlayer === 2}
-            isWinner={game.winner === 2}
-            isDraw={isDraw}
-            turnLabel={getTurnLabel(2)}
-            side="right"
-          />
-        </PanelSlot>
-      </DesktopMain>
+          <PanelSlot>
+            <PlayerPanel
+              player={2}
+              name={playerNames[2]}
+              score={scores[2]}
+              isActive={!isGameOver && game.currentPlayer === 2}
+              isWinner={game.winner === 2}
+              isDraw={isDraw}
+              turnLabel={getTurnLabel(2)}
+              side="right"
+            />
+          </PanelSlot>
+        </DesktopMain>
+      </MainLandmark>
     </PageWrapper>
   );
 }

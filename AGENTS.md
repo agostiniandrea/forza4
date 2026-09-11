@@ -47,6 +47,9 @@ A beautiful, accessible Connect Four game with:
 | `components/game/PlayerIndicator.tsx` | Mobile score row |
 | `components/game/Confetti.tsx` | CSS particle burst on win |
 | `app/GamePage.tsx` | Main game page — wires everything together |
+| `playwright.config.ts` | Playwright config — chromium (full suite) + mobile-safari (smoke only) |
+| `e2e/support/board.ts` | Shared E2E helpers — `dropInColumn`, `completeSetup`, `playSequence` |
+| `e2e/*.spec.ts` | Playwright E2E specs — setup, gameplay, AI mode, accessibility (axe-core), header controls, mobile smoke |
 
 ## Game constants
 
@@ -74,6 +77,7 @@ Before any PR:
 yarn typecheck   # zero TypeScript errors
 yarn lint        # zero ESLint warnings
 yarn test        # all tests pass
+yarn e2e         # all Playwright E2E tests pass (first run: npx playwright install --with-deps chromium)
 ```
 
 ## Extending the game

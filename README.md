@@ -15,6 +15,7 @@ A beautiful, accessible Connect Four game built with Next.js, React and styled-c
 - **Fullscreen mode** — one click to go edge-to-edge
 - **Single-page layout** — everything fits the viewport, no scroll
 - **WCAG 2.2 Level AA** — keyboard navigation (arrow keys + Enter), ARIA grid, screen reader announcements, `prefers-reduced-motion` support
+- **End-to-end tested** — Playwright suite covering setup, gameplay, AI mode, accessibility (axe-core) and mobile, gating every PR in CI
 
 ## Stack
 
@@ -44,6 +45,9 @@ yarn build      # production build
 yarn typecheck  # TypeScript — must be zero errors before any PR
 yarn lint       # ESLint — must be zero warnings before any PR
 yarn test       # Jest unit tests
+yarn e2e        # Playwright end-to-end tests (requires `yarn build` or `yarn dev` reachable)
+yarn e2e:ui     # Playwright UI mode — step through tests interactively
+yarn e2e:report # open the last HTML report
 ```
 
 ## Architecture
@@ -75,6 +79,15 @@ hooks/
 
 lib/__tests__/
   game-engine.test.ts  # 25 unit tests covering all pure game logic
+
+e2e/
+  support/board.ts          # shared helpers — dropInColumn, completeSetup, playSequence
+  setup.spec.ts              # name entry, mode/difficulty selection
+  gameplay.spec.ts           # 2-player drops, wins, play again / change players
+  ai-mode.spec.ts            # AI replies, blocks immediate threats
+  accessibility.spec.ts      # axe-core scans + focus management
+  header-controls.spec.ts    # sound toggle, fullscreen, new game
+  smoke.spec.ts               # mobile viewport smoke test
 ```
 
 ## Game logic

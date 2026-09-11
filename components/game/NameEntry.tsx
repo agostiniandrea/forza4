@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useId } from "react";
 import type { KeyboardEvent } from "react";
 import styled, { keyframes } from "styled-components";
 import type { GameMode } from "@/hooks/useGame";
@@ -162,6 +162,7 @@ export default function NameEntry({ initialMode, initialDifficulty, initialNames
   const [p1, setP1] = useState(initialNames.p1);
   const [p2, setP2] = useState(initialNames.p2);
   const p1Ref = useRef<HTMLInputElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     p1Ref.current?.focus();
@@ -183,9 +184,9 @@ export default function NameEntry({ initialMode, initialDifficulty, initialNames
   }
 
   return (
-    <Overlay>
+    <Overlay role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <Card>
-        <Label>Set up game</Label>
+        <Label id={titleId}>Set up game</Label>
 
         <SegmentGroup role="group" aria-label="Game mode">
           <SegBtn $active={mode === "2p"} onClick={() => setMode("2p")}>2 Players</SegBtn>

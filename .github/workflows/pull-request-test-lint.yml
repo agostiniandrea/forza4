@@ -47,8 +47,50 @@ jobs:
       - name: Run lint
         run: yarn lint
 
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'yarn'
+
+      - name: Install
+        run: yarn install --immutable
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: yarn e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  auto-merge:
+    name: Auto-merge PR
+    needs: [test-and-lint, e2e]
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
       - name: Auto-merge PR
-        if: success()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh pr merge --auto --squash --delete-branch "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}"

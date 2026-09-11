@@ -40,7 +40,18 @@ function reducer(state: FullState, action: Action): FullState {
     case "RESET":
       return { ...state, game: createInitialState(), isAiThinking: false };
     case "SET_MODE":
-      return { ...state, mode: action.mode, game: createInitialState(), isAiThinking: false };
+      // Confirming setup (first time, or via "Change players") starts a new
+      // match, so the running score resets here too — otherwise a rename or
+      // a mode switch carries over a tally that belongs to the previous
+      // pair of players. "Play again" (the RESET case above) intentionally
+      // does NOT reset scores: that's the same match, next round.
+      return {
+        ...state,
+        mode: action.mode,
+        game: createInitialState(),
+        scores: { 1: 0, 2: 0 },
+        isAiThinking: false,
+      };
     case "SET_DIFFICULTY":
       return { ...state, aiDifficulty: action.difficulty, game: createInitialState(), isAiThinking: false };
     case "AI_THINKING":
