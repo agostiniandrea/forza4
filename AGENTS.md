@@ -47,6 +47,10 @@ A beautiful, accessible Connect Four game with:
 | `components/game/PlayerIndicator.tsx` | Mobile score row |
 | `components/game/Confetti.tsx` | CSS particle burst on win |
 | `app/GamePage.tsx` | Main game page — wires everything together |
+| `app/robots.ts` / `app/sitemap.ts` / `app/manifest.ts` | SEO file-convention routes |
+| `app/opengraph-image.tsx` / `app/twitter-image.tsx` | Dynamic social-preview images (`next/og`), rendered via `lib/og-image.tsx` |
+| `next.config.ts` | Static security headers (HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy) |
+| `middleware.ts` | Per-request Content-Security-Policy header with a nonce + `'strict-dynamic'` — has to be middleware, not next.config.ts, because the App Router's own inline hydration scripts need a fresh nonce every request or they get CSP-blocked and hydration silently fails. Adds `'unsafe-eval'` in dev only, for Fast Refresh's eval-based HMR (never in production) |
 | `playwright.config.ts` | Playwright config — chromium (full suite) + mobile-safari (smoke only) |
 | `e2e/support/board.ts` | Shared E2E helpers — `dropInColumn`, `completeSetup`, `playSequence` |
 | `e2e/*.spec.ts` | Playwright E2E specs — setup, gameplay, AI mode, accessibility (axe-core), header controls, mobile smoke |
