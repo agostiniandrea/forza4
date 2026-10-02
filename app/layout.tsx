@@ -19,6 +19,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://forza4-game.vercel.app"),
   title: "Forza 4",
   description: "A beautiful, accessible Connect Four game. Play against a friend or vs AI.",
   openGraph: {
@@ -26,6 +27,12 @@ export const metadata: Metadata = {
     description: "A beautiful, accessible Connect Four game. Play against a friend or vs AI.",
     type: "website",
     url: "https://forza4-game.vercel.app",
+    siteName: "Forza 4",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Forza 4",
+    description: "A beautiful, accessible Connect Four game. Play against a friend or vs AI.",
   },
 };
 

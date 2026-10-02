@@ -47,6 +47,9 @@ A beautiful, accessible Connect Four game with:
 | `components/game/PlayerIndicator.tsx` | Mobile score row |
 | `components/game/Confetti.tsx` | CSS particle burst on win |
 | `app/GamePage.tsx` | Main game page — wires everything together |
+| `app/robots.ts` / `app/sitemap.ts` / `app/manifest.ts` | SEO file-convention routes |
+| `app/opengraph-image.tsx` / `app/twitter-image.tsx` | Dynamic social-preview images (`next/og`), rendered via `lib/og-image.tsx` |
+| `next.config.ts` | Static security headers, CSP included (HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy, `Content-Security-Policy`). No nonce/middleware: this page is static (prerendered at build), and a nonce only works on dynamically-rendered pages — the CSP header's per-request nonce would never match what's baked into a build-time HTML, blocking Next's own injected scripts. Plain `'unsafe-inline'` instead, per Next's own guidance for apps that don't need nonces. `'unsafe-eval'` is added in dev only, for Fast Refresh (never in production) |
 | `playwright.config.ts` | Playwright config — chromium (full suite) + mobile-safari (smoke only) |
 | `e2e/support/board.ts` | Shared E2E helpers — `dropInColumn`, `completeSetup`, `playSequence` |
 | `e2e/*.spec.ts` | Playwright E2E specs — setup, gameplay, AI mode, accessibility (axe-core), header controls, mobile smoke |

@@ -16,6 +16,7 @@ A beautiful, accessible Connect Four game built with Next.js, React and styled-c
 - **Single-page layout** — everything fits the viewport, no scroll
 - **WCAG 2.2 Level AA** — keyboard navigation (arrow keys + Enter), ARIA grid, screen reader announcements, `prefers-reduced-motion` support
 - **End-to-end tested** — Playwright suite covering setup, gameplay, AI mode, accessibility (axe-core) and mobile, gating every PR in CI
+- **SEO & hardening** — robots.txt, sitemap, web manifest, dynamic Open Graph/Twitter card image, JSON-LD structured data, baseline security headers (CSP, HSTS, X-Frame-Options, Referrer-Policy, Permissions-Policy)
 
 ## Stack
 
@@ -54,10 +55,15 @@ yarn e2e:report # open the last HTML report
 
 ```
 app/
-  page.tsx        # thin server component — renders GamePage
+  page.tsx        # thin server component — renders GamePage + JSON-LD structured data
   GamePage.tsx    # root client component — wires game state to UI
   globals.css     # design tokens (CSS custom properties) + keyframes
-  layout.tsx      # root layout — fonts, StyledComponentsRegistry, Analytics
+  layout.tsx      # root layout — fonts, StyledComponentsRegistry, Analytics, metadataBase
+  robots.ts       # robots.txt (allow all, points to sitemap)
+  sitemap.ts      # sitemap.xml
+  manifest.ts     # web app manifest
+  opengraph-image.tsx  # dynamic OG image (next/og)
+  twitter-image.tsx    # dynamic Twitter card image (same artwork as OG)
 
 components/
   game/           # Board, Piece, GameOverModal, NameEntry, PlayerPanel, PlayerIndicator, Confetti
@@ -71,6 +77,7 @@ lib/
   breakpoints.ts  # mq.sm/md/lg/xl helpers for styled-components
   ClientOnly.tsx  # hydration guard via useSyncExternalStore
   registry.tsx    # styled-components SSR registry for Next.js App Router
+  og-image.tsx    # shared ImageResponse renderer used by opengraph-image.tsx and twitter-image.tsx
 
 hooks/
   useGame.ts      # game state machine (useReducer) + AI scheduling
@@ -106,6 +113,14 @@ Target: **WCAG 2.2 Level AA**
 - `useAnnouncer` injects an `aria-live="assertive"` region for move announcements
 - Skip link is first focusable element
 - All animations respect `prefers-reduced-motion`
+
+## SEO & security headers
+
+- `robots.ts` / `sitemap.ts` / `manifest.ts` — standard Next.js file-convention routes, no extra config needed
+- `opengraph-image.tsx` / `twitter-image.tsx` — generated at request time via `next/og`, sharing one renderer in `lib/og-image.tsx`
+- JSON-LD (`VideoGame` schema) in `app/page.tsx` for richer search/AI-crawler context
+- `next.config.ts` sets all security headers, CSP included, as one static list: HSTS, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, and `Content-Security-Policy` (`script-src 'self' 'unsafe-inline'`, plus `'unsafe-eval'` in development only, for Fast Refresh/React's dev-mode `eval()` use — `style-src 'self' 'unsafe-inline'`, the latter required by styled-components' SSR registry). This page is intentionally static (prerendered at build time), and a nonce-based CSP only works on dynamically-rendered pages — Next applies the nonce during server-side rendering per request, but a static page's HTML is generated once at build time before any request exists, so a per-request nonce never matches what's baked into it, and every inline script Next.js injects (its own hydration bootstrap included) gets CSP-blocked. That's the officially documented trade-off (see [Next's CSP guide](https://nextjs.org/docs/app/guides/content-security-policy#without-nonces)): forcing this single page into dynamic rendering just to support a nonce would cost static optimization and CDN caching for an app that has no per-request data to begin with, so we use the plain `'unsafe-inline'` CSP instead
+- No cookie banner: `@vercel/analytics` / `@vercel/speed-insights` don't use cookies or store personal data (see [Vercel's privacy docs](https://vercel.com/docs/analytics/privacy-policy))
 
 ## License
 
